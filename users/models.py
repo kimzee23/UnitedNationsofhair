@@ -16,7 +16,7 @@ class User(AbstractUser):
     country = models.CharField(max_length=100, blank=True,null=True)
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["email" , "phone"]
+    REQUIRED_FIELDS = ["phone", "username"]
 
     def __str__(self):
         return f"{self.username} ({self.role})"
