@@ -1,12 +1,7 @@
-import os
 
-import django
 from django.test import TestCase
 
 from users.models import User
-
-# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "UnitedNationsOfHair.settings")
-# django.setup()
 
 
 class UserModelTest(TestCase):
@@ -18,5 +13,8 @@ class UserModelTest(TestCase):
             password="pass1234"
         )
         self.assertEqual(user.role, User.Role.CUSTOMER)
-        self.assertEqual(user.password, "pass1234")
-        self.assertEqual(str(user), "customerOne@gmail.com (CUSTOMER)")
+        self.assertEqual(user.email, "customerOne@gmail.com")
+        self.assertEqual(user.username, "customerOne")
+        self.assertEqual(user.phone, "08225026092")
+        self.assertTrue(user.check_password("pass1234"))
+        self.assertEqual(user.role, User.Role.CUSTOMER)
