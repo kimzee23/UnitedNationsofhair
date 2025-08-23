@@ -24,6 +24,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             phone=validated_data.get("phone"),
             country=validated_data.get("country"),
             role=role,
-            password=validated_data.get("password"),
         )
+        user.set_password(validated_data["password"])
+        user.save()
         return user

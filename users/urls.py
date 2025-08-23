@@ -1,8 +1,8 @@
-from django.contrib.auth.views import LoginView, LogoutView
-from  django.urls import path
+from django.contrib.auth.views import LoginView
+from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from users.views import RegisterView, UserProfileView
+from users.views import RegisterView, UserProfileView, LogoutView
 
 urlpatterns = [
     path("signup/", RegisterView.as_view(), name="signup"),
