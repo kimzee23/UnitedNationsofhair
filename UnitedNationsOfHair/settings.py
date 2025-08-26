@@ -104,6 +104,12 @@ DATABASES = {
     }
 }
 
+# For local development
+FRONTEND_URL = "http://127.0.0.1:8000"
+
+# For production, override via environment variable
+# e.g. FRONTEND_URL=https://yourdomain.com
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

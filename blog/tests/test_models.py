@@ -1,5 +1,7 @@
-from django.test import TestCase
 from django.core.exceptions import ValidationError
+from django.test import TestCase
+from rest_framework.test import APIClient, APITestCase
+from rest_framework import status
 from users.models import User
 from blog.models import BlogArticle
 
@@ -53,8 +55,38 @@ class BlogArticleModelTests(TestCase):
             body="This should not be allowed.",
             author=self.customer
         )
-        # Since limit_choices_to only affects the admin/ORM UI,
-        # make i  enforce check manually here
-        if blog.author.role not in [User.Role.INFLUENCER, User.Role.SUPER_ADMIN]:
-            with self.assertRaises(ValidationError):
-                blog.full_clean()   # run validation before saving
+
+        with self.assertRaises(ValidationError):
+            blog.full_clean()   # run validation
+            blog.save()
+
+class BlogArticleAPITests(APITestCase):
+    def setUp(self):
+        self.client: APIClient = self.client
+        self.user = User.objects.create_user(
+                username="influencerOne",
+                email="influencerOne@gmail.com",
+                password="1234pass",
+                role=User.Role.INFLUENCER
+            )
+        self.client.force_authenticate(user=self.user)
+
+        self.blog_data = {
+                "title": "Hair Growth Tips",
+                "slug": "hair-growth-tips",
+                "body": "This blog is about natural hair growth tips.",
+                "tags": ["hair", "natural", "growth"],
+            }
+        from django.urls import reverse
+        self.list_url = reverse("blog-list-create")
+
+    def test_customer_cannot_create_blog(self):
+            customer = User.objects.create_user(
+                email="cust@test.com",
+                username="cust",
+                password="pass123",
+                role=User.Role.CUSTOMER
+            )
+            self.client.force_authenticate(user=customer)
+            response = self.client.post(self.list_url, data=self.blog_data, format="json")
+            self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

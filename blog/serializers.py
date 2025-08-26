@@ -5,7 +5,8 @@ from blog.models import BlogArticle
 
 
 class BlogArticleSerializer(serializers.ModelSerializer):
-    author_name = serializers.CharField(source="author.name", read_only=True)
+    author_name = serializers.CharField(source="author.username", read_only=True)
+
     class Meta:
         model = BlogArticle
         fields = [
@@ -21,10 +22,10 @@ class BlogArticleSerializer(serializers.ModelSerializer):
             "author",
             "author_name"
         ]
-        read_only_fields = ["author","created_at", "updated_at"]
+        read_only_fields = ["author", "created_at", "updated_at"]
 
     def create(self, validated_data):
-        request  = self.context.get("request")
+        request = self.context.get("request")
         if request and hasattr(request, "user"):
             validated_data["author"] = request.user
         return super().create(validated_data)

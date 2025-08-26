@@ -22,8 +22,7 @@ class UserAuthAPITests(APITestCase):
     def test_signup(self):
         response = self.client.post(self.signup_url, self.user_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertIn("access", response.data)
-        self.assertIn("refresh", response.data)
+        self.assertIn("message", response.data)
         self.assertTrue(User.objects.filter(email="userOne@gmail.com").exists())
 
     def test_login_and_profile(self):
@@ -42,10 +41,20 @@ class UserAuthAPITests(APITestCase):
         self.assertEqual(profile_response.status_code, status.HTTP_200_OK)
 
     def test_logout(self):
-        signup_response = self.client.post(self.signup_url, self.user_data, format="json")
-        refresh_token = signup_response.data["refresh"]
+        # Register user
+        self.client.post(self.signup_url, self.user_data, format="json")
 
-        access_token = signup_response.data["access"]
+        # Login to get tokens
+        login_response = self.client.post(
+            self.login_url,
+            {"username": self.user_data["email"], "password": self.user_data["password"]},
+            format="json",
+        )
+
+        refresh_token = login_response.data["refresh"]
+        access_token = login_response.data["access"]
+
+        # Authenticate with access token
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
 
         response = self.client.post(self.logout_url, {"refresh": refresh_token}, format="json")

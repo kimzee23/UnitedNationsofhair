@@ -1,11 +1,18 @@
 from rest_framework import serializers
 from products.models import Brand, Category, Product
+from users.models import User
+from users.serializers import UserSerializer
 
+class VendorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "email"]
 
 class BrandSerializer(serializers.ModelSerializer):
+    owner =  UserSerializer(read_only=True)
     class Meta:
         model = Brand
-        fields = ["id", "name", "description", "website", "country", "owner"]
+        fields = ["id", "name", "description", "website", "country","owner"]
 
 
 class CategorySerializer(serializers.ModelSerializer):

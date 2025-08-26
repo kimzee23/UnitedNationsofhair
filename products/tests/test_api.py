@@ -19,6 +19,7 @@ class TestProductAPI(APITestCase):
             password="vendor1234",
             role=User.Role.VENDOR,
         )
+        print(self.user.id)
 
         def get_test_image():
             file = BytesIO()
