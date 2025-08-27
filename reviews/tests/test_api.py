@@ -13,11 +13,11 @@ class ReviewAPITests(APITestCase):
             password="1234pass",
         )
 
-        # Create brand and category (because Product requires them)
+
         self.brand = Brand.objects.create(name="Test Brand", owner=self.user)
         self.category = Category.objects.create(name="Test Category")
 
-        # Create product
+
         self.product = Product.objects.create(
             name="hair cleaner",
             price=20.00,
