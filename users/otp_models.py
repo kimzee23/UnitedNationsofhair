@@ -1,8 +1,15 @@
+import random, datetime
 from django.db import models
 
-
-class PhoneOTP(models.Model):
-    phone = models.CharField(max_length=15, blank=True, null=True, unique=True)
+class EmailOTP(models.Model):
+    email = models.EmailField(unique=True)
     otp = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False)
+
+    def is_expired(self):
+        return (datetime.datetime.now(datetime.timezone.utc) - self.created_at).seconds > 300  # 5 mins
+
+    @staticmethod
+    def generate_otp():
+        return str(random.randint(100000, 999999))

@@ -26,7 +26,7 @@ class TestProductAPI(APITestCase):
             image = Image.new("RGB", (100, 100), color="red")
             image.save(file, "JPEG")
             file.seek(0)
-            return SimpleUploadedFile("test.jpg", file.read(), content_type="image/jpeg")
+            return SimpleUploadedFile("tests.jpg", file.read(), content_type="image/jpeg")
         self.client.force_authenticate(user=self.user)
 
         self.brand = Brand.objects.create(

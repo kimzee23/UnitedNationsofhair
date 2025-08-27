@@ -8,10 +8,12 @@ from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt import tokens
+
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from users.serializers import RegisterSerializer, UserSerializer, ForgotPasswordSerializer, ResetPasswordSerializer
+from users.otp_models import EmailOTP
+from users.serializers import RegisterSerializer, UserSerializer, ForgotPasswordSerializer, ResetPasswordSerializer, \
+    RequestOTPSerializer, VerifyOTPSerializer
 
 User = get_user_model()
 
@@ -114,7 +116,6 @@ class LogoutView(APIView):
                 {"error": "Invalid refresh token"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
 class ForgotPasswordView(APIView):
     permission_classes = [AllowAny]
 
@@ -123,18 +124,19 @@ class ForgotPasswordView(APIView):
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data["email"]
 
-        user =User.objects.get(email=email)
+        user = User.objects.get(email=email)
         token_generator = PasswordResetTokenGenerator()
-        uidb65 = urlsafe_base64_encode(force_bytes(user.pk))
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
         token = token_generator.make_token(user)
 
-        reset_url = f"{settings.FRONTEND_URL}/reset-password/?uid={uidb65}&token={token}"
+        reset_url = f"{settings.FRONTEND_URL}/reset-password/?uid={uidb64}&token={token}"
 
         send_mail(
             subject="Reset your password",
             message=f"Click here to reset your password: {reset_url}",
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
+            fail_silently=True,
         )
         return Response({"message": "Password reset link sent to your email."}, status=status.HTTP_200_OK)
 
@@ -146,3 +148,68 @@ class ResetPasswordView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"message": "Password reset successful."})
+
+class RequestOTPView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = RequestOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+
+        otp = EmailOTP.generate_otp()
+        EmailOTP.objects.update_or_create(
+            email=email,
+            defaults={"otp": otp, "is_verified": False}
+        )
+
+        # Send OTP via email
+        send_mail(
+            subject="Your OTP Code",
+            message=f"Your OTP is {otp}. It expires in 5 minutes.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+            fail_silently=True,
+        )
+
+        print(f"DEBUG OTP for {email}: {otp}")  # For dev
+
+        return Response({"message": "OTP sent successfully."}, status=status.HTTP_200_OK)
+
+
+class VerifyOTPView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = VerifyOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data["user"]
+
+        refresh = RefreshToken.for_user(user)
+        return Response(
+            {
+                "id": str(user.id),
+                "email": user.email,
+                "role": user.role,
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+            },
+            status=status.HTTP_200_OK,
+        )
+class VerifyEmailView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        uid = request.query_params.get("uid")
+        token = request.query_params.get("token")
+
+        try:
+            user = User.objects.get(pk=uid)
+        except User.DoesNotExist:
+            return Response({"error": "Invalid UID"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if default_token_generator.check_token(user, token):
+            user.is_verified = True
+            user.save()
+            return Response({"message": "Email verified successfully!"}, status=status.HTTP_200_OK)
+        return Response({"error": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)

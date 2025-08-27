@@ -3,6 +3,7 @@ from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import serializers
 from users.models import User
+from users.otp_models import  EmailOTP
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -66,3 +67,34 @@ class ResetPasswordSerializer(serializers.Serializer):
         user.set_password(new_password)
         user.save()
         return user
+
+
+class RequestOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        if not User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("No user with this email found.")
+        return value
+
+
+class VerifyOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField()
+
+    def validate(self, attrs):
+        email = attrs.get("email")
+        otp = attrs.get("otp")
+
+        try:
+            email_otp = EmailOTP.objects.get(email=email, otp=otp, is_verified=False)
+        except EmailOTP.DoesNotExist:
+            raise serializers.ValidationError("Invalid OTP")
+
+        if email_otp.is_expired():
+            raise serializers.ValidationError("OTP expired")
+
+        attrs["user"] = User.objects.get(email=email)
+        email_otp.is_verified = True
+        email_otp.save()
+        return attrs

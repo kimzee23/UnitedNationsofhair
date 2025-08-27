@@ -9,21 +9,21 @@ from blog.models import BlogArticle
 class BlogArticleModelTests(TestCase):
     def setUp(self):
         self.influencer = User.objects.create_user(
-            email="influencer@test.com",
+            email="influencer@tests.com",
             username="influencer1",
             phone="1234567890",
             password="pass1234",
             role=User.Role.INFLUENCER
         )
         self.super_admin = User.objects.create_user(
-            email="admin@test.com",
+            email="admin@tests.com",
             username="admin1",
             phone="1234567891",
             password="pass1234",
             role=User.Role.SUPER_ADMIN
         )
         self.customer = User.objects.create_user(
-            email="customer@test.com",
+            email="customer@tests.com",
             username="customer1",
             phone="1234567892",
             password="pass1234",
@@ -82,7 +82,7 @@ class BlogArticleAPITests(APITestCase):
 
     def test_customer_cannot_create_blog(self):
             customer = User.objects.create_user(
-                email="cust@test.com",
+                email="cust@tests.com",
                 username="cust",
                 password="pass123",
                 role=User.Role.CUSTOMER
