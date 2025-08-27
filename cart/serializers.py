@@ -1,16 +1,15 @@
 from rest_framework import serializers
-
 from cart.models import CartItem
+from products.models import Product
 
+class CartItemSerializer(serializers.ModelSerializer):
+    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
 
-class CartItemSerializer(serializers.Serializer):
     class Meta:
         model = CartItem
-        fields = ["id", "user", "product", "quantity","added_at"]
-        read_only_fields = ["id", "user", "added_at"]
+        fields = ["id", "product", "quantity"]
 
     def create(self, validated_data):
-        user = self.context["request"].user
-        validated_data["user"] = user
-        return super().create(validated_data)
-
+        request = self.context.get("request")
+        user = request.user
+        return CartItem.objects.create(user=user, **validated_data)
