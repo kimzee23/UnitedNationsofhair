@@ -15,13 +15,13 @@ class CartModelTests(TestCase):
         self.brand = Brand.objects.create(name="Test Brand", owner=self.user)
         self.category = Category.objects.create(name="Test Category")
         self.product = Product.objects.create(
-            name="hair oil", price= 18.00, brand=self.brand, category=self.category
+            name="Hair oil", price= 18.00, brand=self.brand, category=self.category
         )
     def test_add_to_cart(self):
         cart_item = CartItem.objects.create(
             user=self.user, product=self.product, quantity=1
         )
-        self.assertEqual(str(cart_item), "cartuser - Hair oil x 2")
-        self.assertEqual(cart_item.quantity, 2)
+        self.assertEqual(str(cart_item), "cartuser - Hair oil x 1")
+        self.assertEqual(cart_item.quantity, 1)
         self.assertEqual(cart_item.user, self.user)
         self.assertEqual(cart_item.product, self.product)
