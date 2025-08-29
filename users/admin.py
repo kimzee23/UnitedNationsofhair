@@ -17,4 +17,4 @@ class UserAdmin(UserAdmin):
         (None, {"fields": ("email", "username", "password1", "password2", "phone","role", "is_verified", "is_staff","is_active")}),
     )
     search_fields = ("email", "username", "phone")
-    ordering = ("email")
+    ordering = ("email",)

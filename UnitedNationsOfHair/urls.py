@@ -22,13 +22,13 @@ def home(request):
        return JsonResponse({"message": "Welcome to UnitedNationsOfHair."})
 
 urlpatterns = [
-       path("",home),
+       # path("",home),
        path('admin/', admin.site.urls),
-       path("users/", include("users.urls")),
-       path("products/", include("products.urls")),
-       path("blogs/", include("blog.urls")),
-       path('influencers/', include("influencers.urls")),
-       path("reviews/", include("reviews.urls")),
-       path("cart/", include("cart.urls")),
-       path("wishlist/", include("wishlist.urls")),
+       path("api/v1/users/", include("users.urls")),
+       path("api/v1/products/", include("products.urls")),
+       path("api/v1/blogs/", include("blog.urls")),
+       path('api/v1/influencers/', include("influencers.urls")),
+       path("api/v1/reviews/", include("reviews.urls")),
+       path("api/v1/cart/", include("cart.urls")),
+       path("api/v1/wishlist/", include("wishlist.urls")),
 ]
