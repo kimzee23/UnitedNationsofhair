@@ -3,18 +3,26 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from users.views import RegisterView, UserProfileView, LogoutView, LoginView, ForgotPasswordView, RequestOTPView, \
-    VerifyOTPView
+    VerifyOTPView, VerifyEmailView, ApplyForUpgradeView, ApproveUpgradeView, RejectUpgradeView
 
 urlpatterns = [
     path("signup/", RegisterView.as_view(), name="signup"),
-    path("login/", LoginView.as_view(), name="login"),   # <-- use your custom API LoginView
-    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("login/", LoginView.as_view(), name="login"),
     path("profile/", UserProfileView.as_view(), name="profile"),
     path("logout/", LogoutView.as_view(), name="logout"),
+path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 
     path("forgot-password/", ForgotPasswordView.as_view(), name="forgot_password"),
     path("reset-password/", PasswordResetView.as_view(), name="reset_password"),
-
     path("request-opt/", RequestOTPView.as_view(), name="request_otp"),
     path("verify-otp", VerifyOTPView.as_view(), name="verify_otp"),
+    path("verify-email", VerifyEmailView.as_view(), name="verify_email"),
+
+    path("apply-upgrade/", ApplyForUpgradeView.as_view(), name="apply-upgrade"),
+    path("approve-upgrade/<uuid:user_id>/", ApproveUpgradeView.as_view(), name="approve-upgrade"),
+    path("reject-upgrade/<uuid:user_id>/", RejectUpgradeView.as_view(), name="reject-upgrade"),
+
+
 ]
+
+

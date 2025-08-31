@@ -26,6 +26,12 @@ class User(AbstractUser):
         INFLUENCER = "INFLUENCER", "influencer"
         CUSTOMER = "CUSTOMER", "customer"
 
+    class ApplicationStatus(models.TextChoices):
+        NONE = "NONE", "none"
+        PENDING = "PENDING", "pending"
+        APPROVED = "APPROVED", "approved"
+        REJECTED = "REJECTED", "rejected"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=15, blank=True, null=True, unique=True)
@@ -33,6 +39,13 @@ class User(AbstractUser):
         max_length=20, choices=Role.choices, default=Role.CUSTOMER, editable=False
     )
     country = models.CharField(max_length=100, blank=True, null=True)
+
+    application_role = models.CharField(
+        max_length=20, choices=Role.choices, null=True, editable=False
+    )
+    application_status = models.CharField(
+        max_length=20, choices=ApplicationStatus.choices, default=ApplicationStatus.NONE, editable=False
+    )
 
     is_verified = models.BooleanField(default=False)
 

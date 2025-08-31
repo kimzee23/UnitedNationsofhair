@@ -8,9 +8,13 @@ from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from rest_framework import permissions
+from django.shortcuts import get_object_or_404
+from users.models import User
+
+from users import serializers
 from users.otp_models import EmailOTP
 from users.serializers import RegisterSerializer, UserSerializer, ForgotPasswordSerializer, ResetPasswordSerializer, \
     RequestOTPSerializer, VerifyOTPSerializer
@@ -213,3 +217,79 @@ class VerifyEmailView(APIView):
             user.save()
             return Response({"message": "Email verified successfully!"}, status=status.HTTP_200_OK)
         return Response({"error": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class ApplyForUpgradeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        requested_role = request.data.get("requested_role")
+
+        if user.application_status == User.ApplicationStatus.PENDING:
+            return Response(
+                {"error": "You already have a pending request."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if requested_role not in dict(User.Role.choices).keys():
+            return Response(
+                {"error": "Invalid role requested."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if requested_role == User.Role.CUSTOMER:
+            return Response(
+                {"error": "You are already a customer."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.application_role = requested_role
+        user.application_status = User.ApplicationStatus.PENDING
+        user.save()
+
+        return Response(
+            {"message": f"Upgrade request submitted for role {requested_role}."},
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class ApproveUpgradeView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def patch(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+
+        if user.application_status != User.ApplicationStatus.PENDING:
+            return Response(
+                {"error": "No pending request to approve."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.role = user.application_role
+        user.application_status = User.ApplicationStatus.APPROVED
+        user.save()
+
+        return Response(
+            {"message": f"User upgraded to {user.role}."},
+            status=status.HTTP_200_OK,
+        )
+
+
+class RejectUpgradeView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def patch(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+
+        if user.application_status != User.ApplicationStatus.PENDING:
+            return Response(
+                {"error": "No pending request to reject."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.application_status = User.ApplicationStatus.REJECTED
+        user.save()
+
+        return Response({"message": "Upgrade request rejected."}, status=status.HTTP_200_OK)

@@ -4,3 +4,4 @@ rest_framework_simplejwt
 pillow~=11.3.0
 django-filter~=25.1
 six~=1.17.0
+drf-yasg~=1.21.10

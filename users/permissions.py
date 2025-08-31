@@ -8,7 +8,7 @@ class IsAdmin(permissions.BasePermission):
 class IsVendorOrAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and (
-                request.user.rolo in ["VENDOR", "SUPER_ADMIN"])
+                request.user.role in ["VENDOR", "SUPER_ADMIN"])
 
 class IsInfluencerOrAdmin(permissions.BasePermission):
     def has_permission(self, request, view):

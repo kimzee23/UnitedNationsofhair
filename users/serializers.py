@@ -98,3 +98,14 @@ class VerifyOTPSerializer(serializers.Serializer):
         email_otp.is_verified = True
         email_otp.save()
         return attrs
+
+class RoleUpgradeRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "application_role", "application_status"]
+        read_only_fields = ["application_status"]
+
+        def validate_application_role(self,value):
+            if value not in [User.Role.INFLUENCER, User.Role.VENDOR]:
+                raise serializers.ValidationError("ou can only apply for Influencer or Vendor.")
+            return value

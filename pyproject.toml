@@ -14,3 +14,8 @@ dependencies = [
     "si>=0.1.1.post1",
     "six>=1.17.0",
 ]
+
+[dependency-groups]
+dev = [
+    "drf-yasg>=1.21.10",
+]
