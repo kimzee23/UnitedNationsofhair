@@ -37,6 +37,7 @@ class Product(models.Model):
     affiliate_url = models.URLField(blank=True,null=True)
     image_url = models.URLField(blank=True,null=True)
     image = models.ImageField(blank=True,null=True)
+    is_verified = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

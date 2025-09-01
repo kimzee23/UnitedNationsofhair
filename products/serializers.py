@@ -39,9 +39,24 @@ class ProductSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         brand_id = validated_data.pop("brand_id")
         category_id = validated_data.pop("category_id", None)
+        request = self.context.get("request")
+
+        try:
+            brand = Brand.objects.get(id=brand_id)
+        except Brand.DoesNotExist:
+            raise serializers.ValidationError({"brand_id": "Invalid brand_id. Brand does not exist."})
+
+
+        if request.user != brand.owner and request.user.role != "SUPER_ADMIN":
+            raise serializers.ValidationError({"brand_id": "You can only add products to your own brand."})
+
+
+        if category_id:
+            if not Category.objects.filter(id=category_id).exists():
+                raise serializers.ValidationError({"category_id": "Invalid category_id. Category does not exist."})
 
         return Product.objects.create(
             **validated_data,
-            brand_id=brand_id,
+            brand=brand,
             category_id=category_id
         )

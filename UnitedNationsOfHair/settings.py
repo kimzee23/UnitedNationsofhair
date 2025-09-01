@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "rest_framework_simplejwt.token_blacklist",
-
+    "django_filters",
    'drf_yasg',
 
     "users",
@@ -159,3 +159,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(weeks=2),
 }
+DEFAULT_FROM_EMAIL = "info@unitednationofhaire.com"

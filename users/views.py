@@ -227,6 +227,12 @@ class ApplyForUpgradeView(APIView):
         user = request.user
         requested_role = request.data.get("requested_role")
 
+        if user.role != User.Role.CUSTOMER:
+            return Response(
+                {"error": f"You are already a {user.role}. upgrade not allowed."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         if user.application_status == User.ApplicationStatus.PENDING:
             return Response(
                 {"error": "You already have a pending request."},
