@@ -70,7 +70,6 @@ class CheckoutSerializer(serializers.ModelSerializer):
         )
 
         with transaction.atomic():
-            # Compute total
             total = Decimal("0.00")
             for ci in cart_items:
                 total += (ci.product.price * ci.quantity)
@@ -95,8 +94,10 @@ class CheckoutSerializer(serializers.ModelSerializer):
                 for ci in cart_items
             ])
 
-            # Clear cart
             cart_items.delete()
+
+            if not cart_items.exists():
+                raise serializers.ValidationError("Your cart is empty.")
 
         return order
 

@@ -13,22 +13,19 @@ from orders.serializers import (
 
 
 class CheckoutView(generics.CreateAPIView):
-    """
-    POST /api/v1/orders/checkout/
-    Creates an order from the user's cart.
-    """
     serializer_class = CheckoutSerializer
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        self.instance = serializer.save()
+        return serializer.save()   # return the created order
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        out = OrderDetailSerializer(self.instance).data
+        order = self.perform_create(serializer)   # only call once
+        out = OrderDetailSerializer(order).data
         return Response(out, status=status.HTTP_201_CREATED)
+
 
 
 class MyOrdersListView(generics.ListAPIView):

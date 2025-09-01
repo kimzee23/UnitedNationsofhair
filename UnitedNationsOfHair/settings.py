@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     "blog",
     "cart",
     "wishlist",
+    "orders",
+    "payments",
 
 ]
 
@@ -160,3 +162,9 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(weeks=2),
 }
 DEFAULT_FROM_EMAIL = "info@unitednationofhaire.com"
+
+OPAY_API_URL = "https://sandbox.opay.com" # change to live in production
+
+OPAY_SECRET_KEY = "your_opay_secret_key"
+
+PAYSTACK_SECRET_KEY = "your_paystack_secret_key"
