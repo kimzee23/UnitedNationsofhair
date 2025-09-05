@@ -1,3 +1,6 @@
+from _pyrepl.commands import refresh
+from os import access
+
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -59,7 +62,7 @@ class UserAdmin(BaseUserAdmin):
                 You can now log in to your upgraded dashboard here: {dashboard_url}
 
                 Thank you,
-                United Nations of Haire Team
+                United Nations of Hair Team
                 """,
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[user.email],

@@ -9,18 +9,22 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+import os
 from datetime import timedelta
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv()
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-o3j##_9p$vc^xmm1gc!-i)=7#oz@b^cdcg)4m_^(@8s7e#q5(p'
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -53,6 +57,7 @@ INSTALLED_APPS = [
     "wishlist",
     "orders",
     "payments",
+    "business"
 
 ]
 
@@ -110,8 +115,6 @@ DATABASES = {
     }
 }
 
-# For local development
-FRONTEND_URL = "http://127.0.0.1:8000"
 
 # For production, override via environment variable
 # e.g. FRONTEND_URL=https://yourdomain.com
@@ -161,10 +164,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(weeks=2),
 }
+
+# For local development
+FRONTEND_URL = "http://127.0.0.1:8000"
+
 DEFAULT_FROM_EMAIL = "info@unitednationofhaire.com"
 
-OPAY_API_URL = "https://sandbox.opay.com" # change to live in production
 
-OPAY_SECRET_KEY = "your_opay_secret_key"
+PAYSTACK_SECRET_KEY = os.getenv('PAY_STACK_SECRET_KEY')
 
-PAYSTACK_SECRET_KEY = "your_paystack_secret_key"

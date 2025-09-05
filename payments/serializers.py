@@ -17,6 +17,7 @@ class PaymentInitSerializer(serializers.Serializer):
     provider = serializers.ChoiceField(choices=PaymentProvider.choices)
 
     def validate(self, attrs):
+
         order = self.context["order"]
         if order.status != "PENDING":
             raise serializers.ValidationError(f"Order already {order.status}")

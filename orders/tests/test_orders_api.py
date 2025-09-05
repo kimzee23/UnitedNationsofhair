@@ -22,10 +22,11 @@ class OrdersAPITestCase(APITestCase):
         self.category = Category.objects.create(name="Shampoo", slug="shampoo")
 
         # Customer
-        self.customer = User.objects.create_user(
+        self.customer = (User.objects.create_user
+            (
             username="customer1", email="cust@example.com",
             password="pass123", role="CUSTOMER"
-        )
+        ))
 
         # Product
         self.product = Product.objects.create(
@@ -57,11 +58,9 @@ class OrdersAPITestCase(APITestCase):
             "shipping_country": "NG"
         }
 
-
         # Checkout
         res = self.client.post(checkout_url, payload, format="json")
-        print("checkout error:", res.status_code, res.data)
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED, res.data)
         order_id = res.data["id"]
         self.assertEqual(res.data["status"], OrderStatus.PENDING)
         self.assertEqual(float(res.data["total_amount"]), 20.00)
@@ -69,7 +68,7 @@ class OrdersAPITestCase(APITestCase):
         # Pay
         pay_url = reverse("order-pay", args=[order_id])
         res2 = self.client.patch(pay_url)
-        self.assertEqual(res2.status_code, status.HTTP_200_OK)
+        self.assertEqual(res2.status_code, status.HTTP_200_OK, res2.data)
         self.assertIn("Payment successful", res2.data["message"])
 
         order = Order.objects.get(id=order_id)

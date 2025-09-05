@@ -94,10 +94,8 @@ class CheckoutSerializer(serializers.ModelSerializer):
                 for ci in cart_items
             ])
 
+            # clear cart AFTER snapshot
             cart_items.delete()
-
-            if not cart_items.exists():
-                raise serializers.ValidationError("Your cart is empty.")
 
         return order
 
