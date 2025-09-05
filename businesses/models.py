@@ -11,7 +11,7 @@ class Business(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.OneToOneField(
-          settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="business"
+          settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="businesses"
        )
     name = models.CharField(max_length=255)
     email = models.EmailField()
