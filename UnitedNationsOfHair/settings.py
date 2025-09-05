@@ -57,7 +57,8 @@ INSTALLED_APPS = [
     "wishlist",
     "orders",
     "payments",
-    "businesses"
+    "businesses",
+    "engagement"
 
 ]
 
