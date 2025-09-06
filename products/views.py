@@ -1,12 +1,12 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status, filters
-from rest_framework.decorators import api_view
-from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
+from rest_framework.permissions import IsAdminUser
 
 from products.models import Brand, Category, Product
 from products.serializers import BrandSerializer, CategorySerializer, ProductSerializer
 from users.permissions import IsVendorOrAdmin
+
 
 class BrandListCreateView(generics.ListCreateAPIView):
     queryset = Brand.objects.all()
@@ -30,7 +30,6 @@ class ProductListCreateView(generics.ListCreateAPIView):
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
-
     filterset_fields = {
         "category__id": ["exact"],
         "category__name": ["icontains"],
@@ -41,7 +40,6 @@ class ProductListCreateView(generics.ListCreateAPIView):
     }
 
     search_fields = ["name", "brand__name", "category__name"]
-
     ordering_fields = ["price", "stock", "created_at"]
     ordering = ["-created_at"]
 
@@ -67,6 +65,7 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
         context["request"] = self.request
         return context
 
+
 class ProductVerifyView(generics.UpdateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
@@ -76,28 +75,36 @@ class ProductVerifyView(generics.UpdateAPIView):
         product = self.get_object()
         product.is_verified = True
         product.save()
-        return Response({"message": f" {product.name} has been verified."}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": f"{product.name} has been verified."}, status=status.HTTP_200_OK
+        )
 
-@api_view(["GET"])
-def related_products(request, pk):
+
+class RelatedProductsView(generics.ListAPIView):
+    serializer_class = ProductSerializer
+
+    def get_queryset(self):
+        product_id = self.kwargs.get("pk")
         try:
-            product = Product.objects.get(pk=pk, is_verified=True)
+            product = Product.objects.get(pk=product_id, is_verified=True)
         except Product.DoesNotExist:
-            return Response({"error": "Product not found"}, status=404)
-
-        related = Product.objects.filter(
+            return Product.objects.none()
+        return Product.objects.filter(
             category=product.category,
             is_verified=True
-        ).exclude(id=product.id)[:5]  # limit 5
+        ).exclude(id=product.id)[:5]
 
-        serializer = ProductSerializer(related, many=True, context={"request": request})
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        if not queryset.exists():
+            return Response({"error": "Product not found"}, status=404)
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    # Trending products (mock: most reviewed / later by sales)
-@api_view(["GET"])
-def trending_products(request):
-        trending = Product.objects.filter(is_verified=True).order_by("-created_at")[:5]
-        # TODO: later use review count / sales stats
-        serializer = ProductSerializer(trending, many=True, context={"request": request})
-        return Response(serializer.data)
 
+class TrendingProductsView(generics.ListAPIView):
+    serializer_class = ProductSerializer
+
+    def get_queryset(self):
+        # TODO: later replace with trending logic (review count / sales stats)
+        return Product.objects.filter(is_verified=True).order_by("-created_at")[:5]

@@ -11,7 +11,7 @@ User = get_user_model()
 
 class EngagementTestCase(TestCase):
     def setUp(self):
-        self.client = APIClient()
+        self.client : APIClient = APIClient()
 
         # Create main user
         self.user = User.objects.create_user(
@@ -59,9 +59,9 @@ class EngagementTestCase(TestCase):
             category=self.category
         )
 
-        # Create blog article (use correct 'body' field)
+
         self.blog = BlogArticle.objects.create(
-            title="Test Blog",
+            title="Best hair cream",
             body="This is a test blog content.",
             author=self.user
         )
@@ -80,7 +80,7 @@ class EngagementTestCase(TestCase):
 
     # ---------- LIKES ----------
     def test_toggle_like(self):
-        # Like the product
+
         response1 = self.client.post(
             f"/api/v1/engagement/product/{self.product.id}/like/"
         )
@@ -96,7 +96,7 @@ class EngagementTestCase(TestCase):
 
     # ---------- FOLLOWS ----------
     def test_toggle_follow(self):
-        # Follow
+
         response1 = self.client.post(
             f"/api/v1/engagement/follow/{self.other_user.id}/"
         )

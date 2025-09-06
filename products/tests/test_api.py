@@ -1,5 +1,4 @@
 from io import BytesIO
-
 from PIL import Image
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
@@ -12,23 +11,16 @@ from users.models import User
 
 class TestProductAPI(APITestCase):
     def setUp(self):
-        self.client: APIClient = self.client
+        self.client : APIClient = APIClient()
         self.user = User.objects.create_user(
             username="vendorOne",
             email="vendorOne@gmail.com",
             password="vendor1234",
             role=User.Role.VENDOR,
         )
-        print(self.user.id)
-
-        def get_test_image():
-            file = BytesIO()
-            image = Image.new("RGB", (100, 100), color="red")
-            image.save(file, "JPEG")
-            file.seek(0)
-            return SimpleUploadedFile("tests.jpg", file.read(), content_type="image/jpeg")
         self.client.force_authenticate(user=self.user)
 
+        # Create Brand
         self.brand = Brand.objects.create(
             name="brandOne",
             description="A new brand",
@@ -37,18 +29,23 @@ class TestProductAPI(APITestCase):
             owner=self.user,
         )
 
+        # Create Category
         self.category = Category.objects.create(
             name="Hair care",
             slug="hair-care",
         )
 
-        self.test_image = SimpleUploadedFile(
-            name="test_image.jpeg",
-            content=b"test_image-content",
-            content_type="image/jpeg",
-        )
-        self.test_image=get_test_image()
+        # Helper to generate an in-memory image
+        def get_test_image():
+            file = BytesIO()
+            image = Image.new("RGB", (100, 100), color="red")
+            image.save(file, "JPEG")
+            file.seek(0)
+            return SimpleUploadedFile("test_image.jpg", file.read(), content_type="image/jpeg")
 
+        self.test_image = get_test_image()
+
+        # Product payload
         self.product_data = {
             "name": "shampoo",
             "price": "100.9",
@@ -62,6 +59,7 @@ class TestProductAPI(APITestCase):
         url = reverse("product-list-create")
         response = self.client.post(url, self.product_data, format="multipart")
         print("Response data:", response.data)
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["name"], "shampoo")
         self.assertEqual(float(response.data["price"]), 100.9)
