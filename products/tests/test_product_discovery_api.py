@@ -1,6 +1,8 @@
+import os
+
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIClient
 from products.models import Brand, Category, Product
 from users.models import User
 from io import BytesIO
@@ -10,7 +12,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 class TestProductDiscoveryAPI(APITestCase):
     def setUp(self):
-        # Create a vendor user and authenticate
+        self.client: APIClient = APIClient()
         self.user = User.objects.create_user(
             username="vendorTwo",
             email="vendorTwo@gmail.com",
@@ -19,7 +21,6 @@ class TestProductDiscoveryAPI(APITestCase):
         )
         self.client.force_authenticate(user=self.user)
 
-        # Create brand and category
         self.brand = Brand.objects.create(
             name="brandTwo",
             description="Another brand",
@@ -27,26 +28,34 @@ class TestProductDiscoveryAPI(APITestCase):
             country="Nigeria",
             owner=self.user,
         )
-        self.category = Category.objects.create(name="Hair care", slug="hair-care")
+        self.category = (
+            Category.objects.create(name="Hair care",
+                                    slug="hair-care"))
 
-        # Helper to create image
-        def get_test_image():
+        def get_test_image(save_folder=None):
             file = BytesIO()
             image = Image.new("RGB", (100, 100), color="blue")
             image.save(file, "JPEG")
+            file_content = file.getvalue()
+
+            if save_folder:
+                os.makedirs(save_folder,exist_ok=True)
+                file_path = os.path.join(save_folder, "test_image.jpg")
+                with open(file_path, "wb") as f:
+                    f.write(file_content)
+                print(f"Image save to: {file_path}")
             file.seek(0)
             return SimpleUploadedFile("test_image.jpg", file.read(), content_type="image/jpeg")
 
-        # Create verified products
         self.products = []
-        for i in range(6):
+        for item in range(6):
             product = Product.objects.create(
-                name=f"Product {i+1}",
-                price=50 + i,
-                stock=5 + i,
+                name=f"Product {item+1}",
+                price=50 + item,
+                stock=5 + item,
                 brand=self.brand,
                 category=self.category,
-                image=get_test_image(),
+                image=get_test_image(save_folder="images"),
                 is_verified=True,
             )
             self.products.append(product)
@@ -59,7 +68,7 @@ class TestProductDiscoveryAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # Should not include the product itself, max 5 related
-        self.assertTrue(all(p["id"] != str(product.id) for p in response.data))
+        self.assertTrue(all(pro["id"] != str(product.id) for pro in response.data))
         self.assertLessEqual(len(response.data), 5)
 
     def test_trending_products(self):
@@ -69,6 +78,6 @@ class TestProductDiscoveryAPI(APITestCase):
 
         # Should return up to 5 verified products ordered by newest
         self.assertLessEqual(len(response.data), 5)
-        # Check that products are verified
-        for p in response.data:
-            self.assertTrue(Product.objects.get(id=p["id"]).is_verified)
+
+        for pro in response.data:
+            self.assertTrue(Product.objects.get(id=pro["id"]).is_verified)

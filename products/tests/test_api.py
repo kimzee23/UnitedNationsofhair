@@ -1,3 +1,4 @@
+import os
 from io import BytesIO
 from PIL import Image
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -35,17 +36,24 @@ class TestProductAPI(APITestCase):
             slug="hair-care",
         )
 
-        # Helper to generate an in-memory image
-        def get_test_image():
+        def get_test_image(save_folder=None):
             file = BytesIO()
             image = Image.new("RGB", (100, 100), color="red")
             image.save(file, "JPEG")
+            file_content= file.getvalue()
+
+            if save_folder:
+                os.makedirs(save_folder, exist_ok=True)
+                file_path = os.path.join(save_folder, "test_images.jpg")
+                with open(file_path, "wb") as f:
+                    f.write(file_content)
+                    print(f"File saved to {file_path}")
+
             file.seek(0)
             return SimpleUploadedFile("test_image.jpg", file.read(), content_type="image/jpeg")
 
-        self.test_image = get_test_image()
+        self.test_image = get_test_image(save_folder="images")
 
-        # Product payload
         self.product_data = {
             "name": "shampoo",
             "price": "100.9",

@@ -54,5 +54,5 @@ urlpatterns = [
        path("api/v1/businesses/", include("businesses.urls")),
 
        path("api/v1/engagement/", include("engagement.urls")),
-
+       path("api/v1/affiliate/", include("affiliate.urls")),
 ]
