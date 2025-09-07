@@ -11,7 +11,7 @@ class BusinessTestCase(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
             username="testuser",
-            email="test@example.com",
+            email="tests@example.com",
             password="password"
         )
         self.admin = User.objects.create_superuser(

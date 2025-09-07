@@ -55,4 +55,5 @@ urlpatterns = [
 
        path("api/v1/engagement/", include("engagement.urls")),
        path("api/v1/affiliate/", include("affiliate.urls")),
+       path("api/v1/salons/", include("salons.urls")),
 ]

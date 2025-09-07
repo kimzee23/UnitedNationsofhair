@@ -9,7 +9,7 @@ class RoleUpgradeFlowTests(APITestCase):
         self.client : APIClient = self.client
         # Customer
         self.customer = User.objects.create_user(
-            email="customer@test.com",
+            email="customer@tests.com",
             username="customer",
             password="pass1234",
             role=User.Role.CUSTOMER,
@@ -17,7 +17,7 @@ class RoleUpgradeFlowTests(APITestCase):
 
         # Admin
         self.admin = User.objects.create_superuser(
-            email="admin@test.com",
+            email="admin@tests.com",
             username="admin",
             password="adminpass",
         )

@@ -16,7 +16,7 @@ class EngagementTestCase(TestCase):
         # Create main user
         self.user = User.objects.create_user(
             username="testuser",
-            email="test@example.com",
+            email="tests@example.com",
             password="password123",
             role="CUSTOMER"
         )
@@ -48,7 +48,7 @@ class EngagementTestCase(TestCase):
 
         self.category = Category.objects.create(
             name="Test Category",
-            slug="test-category"
+            slug="tests-category"
         )
 
         self.product = Product.objects.create(
@@ -62,7 +62,7 @@ class EngagementTestCase(TestCase):
 
         self.blog = BlogArticle.objects.create(
             title="Best hair cream",
-            body="This is a test blog content.",
+            body="This is a tests blog content.",
             author=self.user
         )
 

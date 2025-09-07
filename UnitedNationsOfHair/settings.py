@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "businesses",
     "engagement",
     "affiliate",
+    "salons",
 
 ]
 

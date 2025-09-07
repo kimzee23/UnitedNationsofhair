@@ -8,16 +8,16 @@ from blog.models import BlogArticle
 class BlogPermissionTests(APITestCase):
     def setUp(self):
         self.user_admin = User.objects.create_user(
-            email="admin@test.com", username="admin", password="pass123", role=User.Role.SUPER_ADMIN
+            email="admin@tests.com", username="admin", password="pass123", role=User.Role.SUPER_ADMIN
         )
         self.user_influencer = User.objects.create_user(
-            email="influencer@test.com", username="influencer", password="pass123", role=User.Role.INFLUENCER
+            email="influencer@tests.com", username="influencer", password="pass123", role=User.Role.INFLUENCER
         )
         self.user_vendor = User.objects.create_user(
-            email="vendor@test.com", username="vendor", password="pass123", role=User.Role.VENDOR
+            email="vendor@tests.com", username="vendor", password="pass123", role=User.Role.VENDOR
         )
         self.user_customer = User.objects.create_user(
-            email="cust@test.com", username="cust", password="pass123", role=User.Role.CUSTOMER
+            email="cust@tests.com", username="cust", password="pass123", role=User.Role.CUSTOMER
         )
 
         self.blog_url = reverse("blog-list-create")

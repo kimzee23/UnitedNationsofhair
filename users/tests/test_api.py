@@ -105,7 +105,7 @@ class OTPAuthAPITests(APITestCase):
 
         otp_entry.refresh_from_db()
         self.assertTrue(otp_entry.is_verified)
-#test for upgrade
+#tests for upgrade
 class UpgradeViewTests(APITestCase):
     def setUp(self):
         self.client: APIClient = self.client
