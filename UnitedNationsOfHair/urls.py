@@ -23,6 +23,8 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+from users.social_views import GoogleLogin, FacebookLogin, AppleLogin
+
 schema_view = get_schema_view(
    openapi.Info(
       title="Snippets API",
@@ -56,4 +58,8 @@ urlpatterns = [
        path("api/v1/engagement/", include("engagement.urls")),
        path("api/v1/affiliate/", include("affiliate.urls")),
        path("api/v1/salons/", include("salons.urls")),
+
+    path("api/v1/auth/google/", GoogleLogin.as_view(), name="google_login"),
+    path("api/v1/auth/facebook/", FacebookLogin.as_view(), name="facebook_login"),
+    path("api/v1/auth/apple/", AppleLogin.as_view(), name="apple_login"),
 ]

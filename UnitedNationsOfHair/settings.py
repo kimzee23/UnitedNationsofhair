@@ -36,17 +36,36 @@ AUTH_USER_MODEL = "users.User"
 # Application definition
 
 INSTALLED_APPS = [
+    # Django built-ins
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
+
+
     "rest_framework",
     "rest_framework.authtoken",
     "rest_framework_simplejwt.token_blacklist",
     "django_filters",
-   'drf_yasg',
+    "drf_yasg",
+
+
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+
+
+    "allauth.socialaccount.providers.google",
+    "allauth.socialaccount.providers.facebook",
+    "allauth.socialaccount.providers.apple",
+
+
+    "dj_rest_auth",
+    "dj_rest_auth.registration",
+
 
     "users",
     "products",
@@ -61,8 +80,8 @@ INSTALLED_APPS = [
     "engagement",
     "affiliate",
     "salons",
-
 ]
+
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -81,7 +100,21 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+   "allauth.account.middleware.AccountMiddleware",
+
 ]
+SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend"
+]
+ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = True
+ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+ACCOUNT_EMAIL_VERIFICATION = "none"
 
 ROOT_URLCONF = 'UnitedNationsOfHair.urls'
 
@@ -176,3 +209,8 @@ DEFAULT_FROM_EMAIL = "info@unitednationofhaire.com"
 
 PAYSTACK_SECRET_KEY = os.getenv('PAY_STACK_SECRET_KEY')
 
+ACCOUNT_LOGIN_METHODS = {"email", "username"}
+ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*", "password2*"]
+
+
+ACCOUNT_UNIQUE_EMAIL = True
