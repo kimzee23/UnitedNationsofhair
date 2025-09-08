@@ -52,25 +52,22 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_yasg",
 
-
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-
 
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.facebook",
     "allauth.socialaccount.providers.apple",
 
-
     "dj_rest_auth",
     "dj_rest_auth.registration",
-
 
     "users",
     "products",
     "reviews",
     "influencers",
+    "vendor",
     "blog",
     "cart",
     "wishlist",

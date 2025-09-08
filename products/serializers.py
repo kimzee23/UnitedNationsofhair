@@ -46,10 +46,8 @@ class ProductSerializer(serializers.ModelSerializer):
         except Brand.DoesNotExist:
             raise serializers.ValidationError({"brand_id": "Invalid brand_id. Brand does not exist."})
 
-
-        if request.user != brand.owner and request.user.role != "SUPER_ADMIN":
+        if request.user != brand.owner.user and request.user.role != "SUPER_ADMIN":
             raise serializers.ValidationError({"brand_id": "You can only add products to your own brand."})
-
 
         if category_id:
             if not Category.objects.filter(id=category_id).exists():
