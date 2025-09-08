@@ -15,10 +15,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.http import JsonResponse
+# from django.http import JsonResponse
 from django.urls import path, include
 
-from django.urls import re_path
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -37,9 +36,9 @@ schema_view = get_schema_view(
    public=True,
    permission_classes=[permissions.AllowAny,],
 )
-
-def home(request):
-       return JsonResponse({"message": "Welcome to UnitedNationsOfHair."})
+#
+# def home(request):
+#        return JsonResponse({"message": "Welcome to UnitedNationsOfHair."})
 
 urlpatterns = [
        # path("",home),
@@ -59,7 +58,7 @@ urlpatterns = [
        path("api/v1/affiliate/", include("affiliate.urls")),
        path("api/v1/salons/", include("salons.urls")),
 
-    path("api/v1/auth/google/", GoogleLogin.as_view(), name="google_login"),
-    path("api/v1/auth/facebook/", FacebookLogin.as_view(), name="facebook_login"),
-    path("api/v1/auth/apple/", AppleLogin.as_view(), name="apple_login"),
+      path("api/v1/auth/google/", GoogleLogin.as_view(), name="google_login"),
+      path("api/v1/auth/facebook/", FacebookLogin.as_view(), name="facebook_login"),
+      path("api/v1/auth/apple/", AppleLogin.as_view(), name="apple_login"),
 ]

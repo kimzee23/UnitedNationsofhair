@@ -110,11 +110,20 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend"
 ]
+
 ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = True
-ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 ACCOUNT_EMAIL_VERIFICATION = "none"
+
+PAYSTACK_SECRET_KEY = os.getenv('PAY_STACK_SECRET_KEY')
+
+ACCOUNT_SIGNUP_FIELDS = {
+    "email": {"required": True, "unique": True},
+    "username": {"required": True, "unique": True},
+    "password1": {"required": True},
+    "password2": {"required": True},
+}
+
+ACCOUNT_UNIQUE_EMAIL = True
 
 ROOT_URLCONF = 'UnitedNationsOfHair.urls'
 
@@ -207,10 +216,4 @@ FRONTEND_URL = "http://127.0.0.1:8000"
 DEFAULT_FROM_EMAIL = "info@unitednationofhaire.com"
 
 
-PAYSTACK_SECRET_KEY = os.getenv('PAY_STACK_SECRET_KEY')
 
-ACCOUNT_LOGIN_METHODS = {"email", "username"}
-ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*", "password2*"]
-
-
-ACCOUNT_UNIQUE_EMAIL = True

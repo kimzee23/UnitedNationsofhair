@@ -24,20 +24,21 @@ class BlogPermissionTests(APITestCase):
 
     def test_customer_cannot_create_blog(self):
         self.client.force_authenticate(user=self.user_customer)
-        response = self.client.post(self.blog_url, {"title": "Test Blog", "content": "Some content"})
+        response = self.client.post(self.blog_url, {"title": "Test Blog", "body": "Some content"})
+
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_influencer_can_create_blog(self):
         self.client.force_authenticate(user=self.user_influencer)
-        response = self.client.post(self.blog_url, {"title": "Test Blog", "content": "Some content"})
+        response = self.client.post(self.blog_url, {"title": "Test Blog", "body": "Some content"})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_vendor_cannot_create_blog(self):
         self.client.force_authenticate(user=self.user_vendor)
-        response = self.client.post(self.blog_url, {"title": "Test Blog", "content": "Some content"})
+        response = self.client.post(self.blog_url, {"title": "Test Blog", "body": "Some content"})
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_admin_can_create_blog(self):
         self.client.force_authenticate(user=self.user_admin)
-        response = self.client.post(self.blog_url, {"title": "Admin Blog", "content": "Admin content"})
+        response = self.client.post(self.blog_url, {"title": "Test Blog", "body": "Some content"})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)

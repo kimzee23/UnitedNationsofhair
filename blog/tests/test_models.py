@@ -57,12 +57,12 @@ class BlogArticleModelTests(TestCase):
         )
 
         with self.assertRaises(ValidationError):
-            blog.full_clean()   # run validation
+            blog.full_clean()
             blog.save()
 
 class BlogArticleAPITests(APITestCase):
     def setUp(self):
-        self.client: APIClient = self.client
+        self.client: APIClient = APIClient()
         self.user = User.objects.create_user(
                 username="influencerOne",
                 email="influencerOne@gmail.com",
