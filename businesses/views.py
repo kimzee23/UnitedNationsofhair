@@ -51,3 +51,14 @@ class BusinessRejectView(generics.UpdateAPIView):
         business.save(update_fields=["kyc_status"])
         serializer = self.get_serializer(business)
         return Response(serializer.data)
+
+class BusinessListView(generics.ListAPIView):
+    serializer_class = BusinessSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        region = self.request.query_params.get("region")
+        country = Business.objects.filter(kyc_status=Business.KYCStatus.APPROVED)
+        if region:
+            country = country.filter(region__country_code__iexact=region)
+        return country

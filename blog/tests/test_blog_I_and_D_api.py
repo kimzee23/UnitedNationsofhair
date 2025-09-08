@@ -95,7 +95,7 @@ class BlogArticleAPITestCase(APITestCase):
             "body": "Some influencer content",
             "is_published": True
         }
-        response = self.client.post(self.list_url, data)
+        response = self.client.post(self.private_list_url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["author"], self.influencer_user.id)
 

@@ -16,6 +16,7 @@ class Salon(models.Model):
     country = models.CharField(max_length=100)
     phone = models.CharField(max_length=20)
     website = models.URLField()
+    region = models.ForeignKey("Region", on_delete=models.CASCADE, related_name="salons",default=1)
     is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
@@ -40,12 +41,19 @@ class Stylist(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="stylist_profile")
     salon = models.ForeignKey(Salon, on_delete=models.CASCADE, related_name="stylist_salon")
     bio = models.TextField(blank=True, null=True)
-    specialization = models.CharField()
-    experience_level = models.PositiveIntegerField(choices=STYLIST_EXPERIENCE_CHOICES,default=0)
-    website = models.URLField(blank=True,null=True)
+    specialization = models.CharField(max_length=255)
+    experience_level = models.PositiveIntegerField(choices=STYLIST_EXPERIENCE_CHOICES, default=1)
+    website = models.URLField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class Region(models.Model):
+    name = models.CharField(max_length=100)
+    country_code = models.CharField(max_length=5)
+    currency = models.CharField(max_length=10, default="USD")
+    language = models.CharField(max_length=20, default="en")
 
     def __str__(self):
         return f"{self.user.username} - {self.specialization or 'Stylist'} ({self.salon.name})"

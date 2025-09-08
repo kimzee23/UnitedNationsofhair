@@ -446,6 +446,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "cryptography" },
     { name = "drf-yasg" },
 ]
 
@@ -466,7 +467,10 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "drf-yasg", specifier = ">=1.21.10" }]
+dev = [
+    { name = "cryptography", specifier = ">=45.0.7" },
+    { name = "drf-yasg", specifier = ">=1.21.10" },
+]
 
 [[package]]
 name = "uritemplate"

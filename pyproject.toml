@@ -20,5 +20,6 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "cryptography>=45.0.7",
     "drf-yasg>=1.21.10",
 ]

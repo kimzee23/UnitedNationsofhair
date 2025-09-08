@@ -21,8 +21,21 @@ class Business(models.Model):
     kyc_status = models.CharField(
         max_length=20, choices=KYCStatus.choices, default=KYCStatus.PENDING
         )
+    region = models.ForeignKey(
+        "Region",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="businesses"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+class Region(models.Model):
+    name = models.CharField(max_length=100)
+    country_code = models.CharField(max_length=5)
+    currency = models.CharField(max_length=10, default="USD")
+    language = models.CharField(max_length=20, default="en")
 
     def __str__(self):
         return self.name
