@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-
+from video_encoding.fields import VideoField
 
 class BlogArticle(models.Model):
     id = models.AutoField(primary_key=True)
@@ -9,7 +9,7 @@ class BlogArticle(models.Model):
     body = models.TextField()
 
     hero_image_url = models.URLField(blank=True, null=True)
-    hero_image = models.ImageField(upload_to="blogs/", blank=True, null=True)
+    hero_image = VideoField(upload_to="blogs/", blank=True, null=True)
 
     video_url = models.URLField(blank=True, null=True)
     video_file = models.FileField(upload_to="blogs/videos/", blank=True, null=True)
