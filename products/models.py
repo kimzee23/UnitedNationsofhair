@@ -12,10 +12,11 @@ class Brand(models.Model):
     website = models.URLField(blank=True)
     country = models.CharField(max_length=200, blank=True, null=True)
     owner = models.ForeignKey(
-        "vendor.Vendor",
+        User,
         on_delete=models.CASCADE,
-        related_name="brands"
+        limit_choices_to={"role": "VENDOR"}
     )
+
     def __str__(self):
         return self.name
 

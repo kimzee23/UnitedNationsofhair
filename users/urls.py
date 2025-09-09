@@ -1,9 +1,8 @@
-from django.contrib.auth.views import PasswordResetView
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from users.views import RegisterView, UserProfileView, LogoutView, LoginView, ForgotPasswordView, RequestOTPView, \
-    VerifyOTPView, VerifyEmailView, ApplyForUpgradeView, ApproveUpgradeView, RejectUpgradeView
+    VerifyOTPView, VerifyEmailView, ApplyForUpgradeView, ApproveUpgradeView, RejectUpgradeView, ResetPasswordView
 
 urlpatterns = [
     path("signup/", RegisterView.as_view(), name="signup"),
@@ -13,7 +12,7 @@ urlpatterns = [
 path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 
     path("forgot-password/", ForgotPasswordView.as_view(), name="forgot_password"),
-    path("reset-password/", PasswordResetView.as_view(), name="reset_password"),
+    path("reset-password/", ResetPasswordView.as_view(), name="reset_password"),
     path("request-opt/", RequestOTPView.as_view(), name="request_otp"),
     path("verify-otp", VerifyOTPView.as_view(), name="verify_otp"),
     path("verify-email", VerifyEmailView.as_view(), name="verify_email"),

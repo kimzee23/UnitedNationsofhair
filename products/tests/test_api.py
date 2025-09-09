@@ -6,31 +6,35 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from products.models import Brand, Category
+from products.models import Brand, Category, Product
 from users.models import User
+from vendor.models import Vendor
 
 
 class TestProductAPI(APITestCase):
     def setUp(self):
-        self.client : APIClient = APIClient()
+        self.client: APIClient = APIClient()
         self.user = User.objects.create_user(
             username="vendorOne",
             email="vendorOne@gmail.com",
             password="vendor1234",
             role=User.Role.VENDOR,
         )
+        self.vendor_profile = Vendor.objects.create(
+            user=self.user,
+            business_name="Vendor one",
+        )
+
         self.client.force_authenticate(user=self.user)
 
-        # Create Brand
         self.brand = Brand.objects.create(
             name="brandOne",
             description="A new brand",
             website="https://www.brand.com",
             country="Nigeria",
-            owner=self.user,
+            owner=self.vendor_profile,
         )
 
-        # Create Category
         self.category = Category.objects.create(
             name="Hair care",
             slug="hair-care",
@@ -40,7 +44,7 @@ class TestProductAPI(APITestCase):
             file = BytesIO()
             image = Image.new("RGB", (100, 100), color="red")
             image.save(file, "JPEG")
-            file_content= file.getvalue()
+            file_content = file.getvalue()
 
             if save_folder:
                 os.makedirs(save_folder, exist_ok=True)
@@ -58,8 +62,8 @@ class TestProductAPI(APITestCase):
             "name": "shampoo",
             "price": "100.9",
             "stock": 10,
-            "brand_id": str(self.brand.id),
-            "category_id": str(self.category.id),
+            "brand_id": self.brand.id,  # vendor's brand
+            "category_id": self.category.id,
             "image": self.test_image,
         }
 
@@ -71,5 +75,5 @@ class TestProductAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["name"], "shampoo")
         self.assertEqual(float(response.data["price"]), 100.9)
-        self.assertEqual(response.data["brand"]["id"], str(self.brand.id))
-        self.assertEqual(response.data["category"]["id"], str(self.category.id))
+        self.assertEqual(response.data["brand"]["id"], self.brand.id)
+        self.assertEqual(response.data["category"]["id"], self.category.id)

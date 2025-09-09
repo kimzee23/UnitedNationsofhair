@@ -110,17 +110,13 @@ AUTHENTICATION_BACKENDS = [
 
 ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
 ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_UNIQUE_EMAIL = True
 
 PAYSTACK_SECRET_KEY = os.getenv('PAY_STACK_SECRET_KEY')
 
-ACCOUNT_SIGNUP_FIELDS = {
-    "email": {"required": True, "unique": True},
-    "username": {"required": True, "unique": True},
-    "password1": {"required": True},
-    "password2": {"required": True},
-}
+ACCOUNT_SIGNUP_FIELDS = ["email", "username", "password1", "password2"]
 
-ACCOUNT_UNIQUE_EMAIL = True
+
 
 ROOT_URLCONF = 'UnitedNationsOfHair.urls'
 
@@ -149,7 +145,7 @@ WSGI_APPLICATION = 'UnitedNationsOfHair.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "unitedhairdb",
+        "NAME": "unitednationsofhair",
         "USER": "postgres",
         "PASSWORD": "admin1234",
         "HOST": "localhost",
@@ -207,10 +203,13 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(weeks=2),
 }
 
-# For local development
-FRONTEND_URL = "http://127.0.0.1:8000"
+# # For local development
+# FRONTEND_URL = "http://127.0.0.1:8000"
 
+#ffor development testing sendmail
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "info@unitednationofhaire.com"
-
+FRONTEND_URL = "http://localhost:3000"
 
 

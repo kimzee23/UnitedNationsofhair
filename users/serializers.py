@@ -1,9 +1,10 @@
+import uuid
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import serializers
 from users.models import User
-from users.otp_models import  EmailOTP
+from users.otp_models import EmailOTP
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -13,13 +14,16 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
+    confirm_password = serializers.CharField(write_only=True)
+
     class Meta:
         model = User
-        fields = ["id", "email", "username", "phone", "country", "password", "confirm_password","role"]
+        fields = ["id", "email", "username", "phone", "country", "password", "confirm_password", "role"]
         extra_kwargs = {
             "password": {"write_only": True},
-            "role": {"default": User.Role.CUSTOMER}
+            "role": {"default": User.Role.CUSTOMER},
         }
+
     def validate(self, data):
         if data["password"] != data["confirm_password"]:
             raise serializers.ValidationError("Passwords must match")
@@ -35,8 +39,9 @@ class RegisterSerializer(serializers.ModelSerializer):
             role=User.Role.CUSTOMER,
             password=validated_data["password"],
         )
-        user.save()
         return user
+
+
 class ForgotPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
@@ -104,13 +109,14 @@ class VerifyOTPSerializer(serializers.Serializer):
         email_otp.save()
         return attrs
 
+
 class RoleUpgradeRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "application_role", "application_status"]
         read_only_fields = ["application_status"]
 
-        def validate_application_role(self,value):
-            if value not in [User.Role.INFLUENCER, User.Role.VENDOR]:
-                raise serializers.ValidationError("ou can only apply for Influencer or Vendor.")
-            return value
+    def validate_application_role(self, value):
+        if value not in [User.Role.INFLUENCER, User.Role.VENDOR]:
+            raise serializers.ValidationError("You can only apply for Influencer or Vendor.")
+        return value
