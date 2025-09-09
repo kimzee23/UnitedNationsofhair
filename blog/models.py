@@ -11,6 +11,9 @@ class BlogArticle(models.Model):
     hero_image_url = models.URLField(blank=True, null=True)
     hero_image = models.ImageField(upload_to="blogs/", blank=True, null=True)
 
+    video_url = models.URLField(blank=True, null=True)
+    video_file = models.FileField(upload_to="blogs/videos/", blank=True, null=True)
+
     tags = models.JSONField(default=list, null=True)
 
     is_published = models.BooleanField(default=False)

@@ -180,7 +180,6 @@ class RequestOTPView(APIView):
             defaults={"otp": otp, "is_verified": False}
         )
 
-        # Send OTP via email
         send_mail(
             subject="Your OTP Code",
             message=f"Your OTP is {otp}. It expires in 5 minutes.",
@@ -188,8 +187,6 @@ class RequestOTPView(APIView):
             recipient_list=[email],
             fail_silently=True,
         )
-
-        print(f"DEBUG OTP for {email}: {otp}")  # For dev
 
         return Response({"message": "OTP sent successfully."}, status=status.HTTP_200_OK)
 
@@ -242,7 +239,7 @@ class ApplyForUpgradeView(APIView):
 
         if user.role != User.Role.CUSTOMER:
             return Response(
-                {"error": f"You are already a {user.role}. upgrade not allowed."},
+                {"error": f"You are already a {user.role}. Upgrade not allowed."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -252,21 +249,24 @@ class ApplyForUpgradeView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if requested_role not in dict(User.Role.choices).keys():
+        if requested_role not in [User.Role.INFLUENCER, User.Role.VENDOR]:
             return Response(
-                {"error": "Invalid role requested."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        if requested_role == User.Role.CUSTOMER:
-            return Response(
-                {"error": "You are already a customer."},
+                {"error": "Invalid role requested. Only Influencer or Vendor allowed."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         user.application_role = requested_role
         user.application_status = User.ApplicationStatus.PENDING
         user.save()
+
+        # Send email to admin
+        send_mail(
+            subject="New Upgrade Request",
+            message=f"User {user.email} has applied to become a {requested_role}. Please review.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.ADMIN_EMAIL],  # configure in settings.py
+            fail_silently=True,
+        )
 
         return Response(
             {"message": f"Upgrade request submitted for role {requested_role}."},
@@ -290,8 +290,22 @@ class ApproveUpgradeView(APIView):
         user.application_status = User.ApplicationStatus.APPROVED
         user.save()
 
+        dashboard_url = f"{settings.FRONTEND_URL}/dashboard"
+        if user.role == User.Role.VENDOR:
+            dashboard_url = f"{settings.FRONTEND_URL}/vendor-dashboard"
+        elif user.role == User.Role.INFLUENCER:
+            dashboard_url = f"{settings.FRONTEND_URL}/blog"
+
+        send_mail(
+            subject="Upgrade Approved",
+            message=f"Congratulations! Your upgrade to {user.role} has been approved. "
+                    f"You can now access your dashboard here: {dashboard_url}",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=True,
+        )
         return Response(
-            {"message": f"User upgraded to {user.role}."},
+            {"message": f"User upgraded to {user.role}.", "redirect_url": dashboard_url},
             status=status.HTTP_200_OK,
         )
 
@@ -307,8 +321,14 @@ class RejectUpgradeView(APIView):
                 {"error": "No pending request to reject."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
         user.application_status = User.ApplicationStatus.REJECTED
         user.save()
 
+        send_mail(
+            subject="Upgrade Request Rejected",
+            message=f"Sorry, your upgrade request for {user.application_role} was rejected by admin.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=True,
+        )
         return Response({"message": "Upgrade request rejected."}, status=status.HTTP_200_OK)

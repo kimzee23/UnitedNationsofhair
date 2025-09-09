@@ -8,7 +8,7 @@ class EmailOTP(models.Model):
     is_verified = models.BooleanField(default=False)
 
     def is_expired(self):
-        return (datetime.datetime.now(datetime.timezone.utc) - self.created_at).seconds > 300  # 5 mins
+        return (datetime.datetime.now(datetime.timezone.utc) - self.created_at).seconds > 300
 
     @staticmethod
     def generate_otp():

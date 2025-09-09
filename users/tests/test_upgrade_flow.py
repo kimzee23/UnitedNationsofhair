@@ -7,7 +7,7 @@ from users.models import User
 class RoleUpgradeFlowTests(APITestCase):
     def setUp(self):
         self.client : APIClient = self.client
-        # Customer
+
         self.customer = User.objects.create_user(
             email="customer@tests.com",
             username="customer",
@@ -15,7 +15,6 @@ class RoleUpgradeFlowTests(APITestCase):
             role=User.Role.CUSTOMER,
         )
 
-        # Admin
         self.admin = User.objects.create_superuser(
             email="admin@tests.com",
             username="admin",

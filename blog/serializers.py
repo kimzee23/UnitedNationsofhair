@@ -15,7 +15,7 @@ class BlogArticleSerializer(serializers.ModelSerializer):
             "excerpt", "seo_title", "seo_description",
             "is_published", "views","published_at",
             "hero_image_url", "hero_image", "tags",
-            "created_at", "updated_at",
+            "created_at", "updated_at","video_url", "video_file",
             "author", "author_name"
         ]
         read_only_fields = ["author", "created_at", "updated_at", "views"]

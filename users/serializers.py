@@ -90,25 +90,26 @@ class RequestOTPSerializer(serializers.Serializer):
 
 class VerifyOTPSerializer(serializers.Serializer):
     email = serializers.EmailField()
-    otp = serializers.CharField()
+    otp = serializers.CharField(max_length=6)
 
-    def validate(self, attrs):
-        email = attrs.get("email")
-        otp = attrs.get("otp")
+    def validate(self, data):
+        email = data['email']
+        otp = data['otp']
 
         try:
-            email_otp = EmailOTP.objects.get(email=email, otp=otp, is_verified=False)
+            otp_obj = EmailOTP.objects.get(email=email, otp=otp)
         except EmailOTP.DoesNotExist:
             raise serializers.ValidationError("Invalid OTP")
 
-        if email_otp.is_expired():
+        if otp_obj.is_expired():
             raise serializers.ValidationError("OTP expired")
 
-        attrs["user"] = User.objects.get(email=email)
-        email_otp.is_verified = True
-        email_otp.save()
-        return attrs
+        user = User.objects.filter(email=email).first()
+        if not user:
+            raise serializers.ValidationError("User not found")
 
+        data['user'] = user
+        return data
 
 class RoleUpgradeRequestSerializer(serializers.ModelSerializer):
     class Meta:

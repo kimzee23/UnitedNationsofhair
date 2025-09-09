@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
+
 from products.models import Brand, Category, Product
 from users.models import User
 from users.serializers import UserSerializer
@@ -58,3 +60,39 @@ class ProductSerializer(serializers.ModelSerializer):
             brand=brand,
             category_id=category_id
         )
+
+    def update(self, instance, validated_data):
+        request = self.context.get("request")
+        brand_id = validated_data.pop("brand_id", None)
+        category_id = validated_data.pop("category_id", None)
+
+        if request.user != instance.brand.owner.user and request.user.role != "SUPER_ADMIN":
+            raise serializers.ValidationError({"permission": "You can only update your own products."})
+
+        if brand_id:
+            try:
+                brand = Brand.objects.get(id=brand_id)
+            except Brand.DoesNotExist:
+                raise serializers.ValidationError({"brand_id": "Invalid brand_id."})
+
+            if request.user != brand.owner.user and request.user.role != "SUPER_ADMIN":
+                raise serializers.ValidationError({"brand_id": "You can only move products to your own brand."})
+            instance.brand = brand
+
+
+        if category_id:
+            if not Category.objects.filter(id=category_id).exists():
+                raise serializers.ValidationError({"category_id": "Invalid category_id."})
+            instance.category_id = category_id
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+        return instance
+
+    def perform_destroy(self, instance):
+        request = self.request
+        if request.user != instance.brand.owner.user and request.user.role != "SUPER_ADMIN":
+            raise PermissionDenied("You can only delete your own products.")
+        instance.delete()
