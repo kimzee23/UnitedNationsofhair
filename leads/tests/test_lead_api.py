@@ -20,7 +20,8 @@ class LeadAPITestCase(APITestCase):
         }
 
     def test_create_lead(self):
-        url = reverse("lead-create")  # make sure your urls.py uses this name
+        url = reverse("lead-create")
+        self.client.force_authenticate(user=self.user)
         response = self.client.post(url, self.lead_data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -28,7 +29,6 @@ class LeadAPITestCase(APITestCase):
         self.assertEqual(Lead.objects.first().name, "Jane Doe")
 
     def test_list_leads(self):
-        # Create a lead directly
         Lead.objects.create(
             user=self.user,
             name="John Doe",
@@ -37,7 +37,7 @@ class LeadAPITestCase(APITestCase):
             interest="Wigs",
         )
 
-        url = reverse("lead-list")  # make sure your urls.py uses this name
+        url = reverse("lead-list")  
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
