@@ -63,5 +63,6 @@ urlpatterns = [
       path("api/v1/auth/apple/", AppleLogin.as_view(), name="apple_login"),
 
       path("api/v1/search/", include("search.urls")),
+      path("api/v1/tutorials/", include("tutorials.urls")),
 
 ]
