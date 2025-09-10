@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
-from products.models import Brand, Category, Product
+from products.models import Brand, Category, Product, ProductCompare
 from users.models import User
 from users.serializers import UserSerializer
 
@@ -48,7 +48,7 @@ class ProductSerializer(serializers.ModelSerializer):
         except Brand.DoesNotExist:
             raise serializers.ValidationError({"brand_id": "Invalid brand_id. Brand does not exist."})
 
-        if request.user != brand.owner.user and request.user.role != "SUPER_ADMIN":
+        if request.user != brand.owner and request.user.role != "SUPER_ADMIN":
             raise serializers.ValidationError({"brand_id": "You can only add products to your own brand."})
 
         if category_id:
@@ -91,8 +91,22 @@ class ProductSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-    def perform_destroy(self, instance):
-        request = self.request
-        if request.user != instance.brand.owner.user and request.user.role != "SUPER_ADMIN":
-            raise PermissionDenied("You can only delete your own products.")
-        instance.delete()
+
+class ProductCompareSerializer(serializers.ModelSerializer):
+    products = ProductSerializer(many=True)
+    product_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Product.objects.all(),
+        many=True,
+        write_only=True
+    )
+
+    class Meta:
+        model = ProductCompare
+        fields = ["id", "products", "product_ids", "created_at"]
+
+    def create(self, validated_data):
+        products = validated_data.pop("product_ids")
+        comparison = ProductCompare.objects.create(user=self.context["request"].user)
+        comparison.products.set(products)
+
+        return comparison

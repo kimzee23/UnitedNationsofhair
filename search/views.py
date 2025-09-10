@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,12 +14,15 @@ from .serializers import (
 )
 
 
+from tutorials.models import Tutorial
+from tutorials.serializers import TutorialSerializer
+
 class GlobalSearchView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         query = request.query_params.get("q", "").strip()
-        results = {}
+        results = {"products": [], "blogs": [], "salons": [], "stylists": [], "tutorials": []}
 
         if query:
             products = Product.objects.filter(name__icontains=query, is_verified=True)[:5]
@@ -30,7 +34,13 @@ class GlobalSearchView(APIView):
             salons = Salon.objects.filter(name__icontains=query)[:5]
             results["salons"] = SalonSearchSerializer(salons, many=True).data
 
-            stylists = Stylist.objects.filter(name__icontains=query)[:5]
+            stylists = Stylist.objects.filter(
+                Q(user__first_name__icontains=query) |
+                Q(user__last_name__icontains=query)
+            ).distinct()[:5]
             results["stylists"] = StylistSearchSerializer(stylists, many=True).data
+
+            tutorials = Tutorial.objects.filter(title__icontains=query, is_published=True)[:5]
+            results["tutorials"] = TutorialSerializer(tutorials, many=True).data
 
         return Response(results)

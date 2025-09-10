@@ -6,7 +6,8 @@ from salons.models import Salon, Stylist
 class ProductSearchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ["id", "name", "price", "thumbnail"]
+        fields = ["id", "name", "price", "image_url"]
+
 
 class BlogSearchSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,10 +1,12 @@
+from django.core.exceptions import PermissionDenied
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, status, filters
+from rest_framework import generics, status, filters, permissions
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
+from rest_framework.views import APIView
 
-from products.models import Brand, Category, Product
-from products.serializers import BrandSerializer, CategorySerializer, ProductSerializer
+from products.models import Brand, Category, Product, ProductCompare
+from products.serializers import BrandSerializer, CategorySerializer, ProductSerializer, ProductCompareSerializer
 from users.permissions import IsVendorOrAdmin
 
 
@@ -109,3 +111,37 @@ class TrendingProductsView(generics.ListAPIView):
     def get_queryset(self):
         # TODO: later replace with trending logic (review count / sales stats)
         return Product.objects.filter(is_verified=True).order_by("-created_at")[:5]
+
+class ProductCompareView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        product_ids = request.data.get("products", [])
+        if len(product_ids) < 2:
+            return Response(
+                {"error": "Select at least two products to compare."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        products = Product.objects.filter(id__in=product_ids, is_verified=True)
+        if products.count() < 2:
+            return Response(
+                {"error": "At least two valid verified products required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        comparison, _ = ProductCompare.objects.get_or_create(user=request.user)
+        comparison.products.set(products)
+        serializer = ProductCompareSerializer(comparison, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def get(self, request):
+        comparisons = ProductCompare.objects.filter(user=request.user).order_by("-created_at")
+        serializer = ProductCompareSerializer(comparisons, many=True, context={"request": request})
+        return Response(serializer.data)
+
+    def perform_destroy(self, instance):
+        request = self.request
+        if request.user != instance.brand.owner.user and request.user.role != "SUPER_ADMIN":
+            raise PermissionDenied("You can only delete your own products.")
+        instance.delete()

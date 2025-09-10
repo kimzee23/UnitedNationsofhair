@@ -44,3 +44,11 @@ class Product(models.Model):
 
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name="products")
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name="products")
+
+class ProductCompare(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comparisons")
+    products = models.ManyToManyField("products.Product", related_name="compared_in")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Comparison by {self.user}"
