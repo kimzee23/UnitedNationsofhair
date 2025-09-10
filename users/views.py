@@ -259,12 +259,12 @@ class ApplyForUpgradeView(APIView):
         user.application_status = User.ApplicationStatus.PENDING
         user.save()
 
-        # Send email to admin
+
         send_mail(
-            subject="New Upgrade Request",
+            subject="New Upgrade Request from United Nations of Hair",
             message=f"User {user.email} has applied to become a {requested_role}. Please review.",
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[settings.ADMIN_EMAIL],  # configure in settings.py
+            recipient_list=[settings.ADMIN_EMAIL],
             fail_silently=True,
         )
 

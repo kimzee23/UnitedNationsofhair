@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sites",
 
-    "video_encoding",
+
     "rest_framework",
     "rest_framework.authtoken",
     "rest_framework_simplejwt.token_blacklist",
@@ -207,8 +207,7 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(weeks=2),
 }
 
-# # For local development
-# FRONTEND_URL = "http://127.0.0.1:8000"
+
 
 #ffor development testing sendmail
 
@@ -216,6 +215,4 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "info@unitednationofhaire.com"
 FRONTEND_URL = "http://localhost:3000"
 
-# if not hasattr(translation, 'ugettext_lazy'):
-#     translation.ugettext_lazy = translation.gettext_lazy
 
