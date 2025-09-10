@@ -6,7 +6,7 @@ from .views import (
     ProductDetailView,
     ProductVerifyView,
     RelatedProductsView,
-    TrendingProductsView,
+    TrendingProductsView, ProductCompareView,
 )
 
 urlpatterns = [
@@ -24,6 +24,7 @@ urlpatterns = [
 
     path("products/<uuid:pk>/related/", RelatedProductsView.as_view(), name="related-products"),
     path("products/trending/", TrendingProductsView.as_view(), name="trending-products"),
+    path("compare/", ProductCompareView.as_view(), name="product-compare"),
 
 ]
 

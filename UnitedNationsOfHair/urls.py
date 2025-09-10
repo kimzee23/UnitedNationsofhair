@@ -64,5 +64,6 @@ urlpatterns = [
 
       path("api/v1/search/", include("search.urls")),
       path("api/v1/tutorials/", include("tutorials.urls")),
+      path("api/v1/leads/", include("leads.urls")),
 
 ]

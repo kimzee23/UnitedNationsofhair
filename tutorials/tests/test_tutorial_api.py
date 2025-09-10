@@ -13,13 +13,13 @@ class TutorialAPITestCase(TestCase):
         self.client : APIClient = APIClient()
         self.influencer = User.objects.create_user(
             username="influencer",
-            email="influencer@test.com",
+            email="influencer@tests.com",
             password="testpass123",
             role="INFLUENCER",
         )
         self.normal_user = User.objects.create_user(
             username="user",
-            email="user@test.com",
+            email="user@tests.com",
             password="testpass123",
             role="CUSTOMER",
         )

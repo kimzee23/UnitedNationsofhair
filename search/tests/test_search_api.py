@@ -12,7 +12,7 @@ class SearchAPITestCase(TestCase):
         self.client = APIClient()
         self.user = User.objects.create_user(
             username="influencer",
-            email="influencer@test.com",
+            email="influencer@tests.com",
             password="testpass123",
             role="INFLUENCER",
         )
