@@ -61,4 +61,7 @@ urlpatterns = [
       path("api/v1/auth/google/", GoogleLogin.as_view(), name="google_login"),
       path("api/v1/auth/facebook/", FacebookLogin.as_view(), name="facebook_login"),
       path("api/v1/auth/apple/", AppleLogin.as_view(), name="apple_login"),
+
+      path("api/v1/search/", include("search.urls")),
+
 ]

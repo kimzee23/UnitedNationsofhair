@@ -11,4 +11,5 @@ urlpatterns = [
     path("<uuid:pk>/", OrderDetailView.as_view(), name="order-detail"),
     path("<uuid:pk>/pay/", PayOrderDummyView.as_view(), name="order-pay"),
     path("<uuid:pk>/status/", AdminOrderStatusUpdateView.as_view(), name="order-status-update"),
+
 ]

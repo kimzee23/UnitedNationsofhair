@@ -15,6 +15,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+import django.utils.translation as translation
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv()
@@ -67,7 +69,6 @@ INSTALLED_APPS = [
     "products",
     "reviews",
     "influencers",
-    "vendor",
     "blog",
     "cart",
     "wishlist",
@@ -77,6 +78,8 @@ INSTALLED_APPS = [
     "engagement",
     "affiliate",
     "salons",
+    "search",
+
 ]
 
 
@@ -212,4 +215,6 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "info@unitednationofhaire.com"
 FRONTEND_URL = "http://localhost:3000"
 
+# if not hasattr(translation, 'ugettext_lazy'):
+#     translation.ugettext_lazy = translation.gettext_lazy
 

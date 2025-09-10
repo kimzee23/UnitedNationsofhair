@@ -7,4 +7,5 @@ urlpatterns = [
     path("salons/<uuid:pk>", SalonDetailView.as_view(), name="salons-detail"),
     path("stylists/", StylistListCreateView.as_view(), name="stylists-list-create"),
     path("stylists/<uuid:pk>/", StylistDetailView.as_view(), name="stylists-detail"),
+
 ]

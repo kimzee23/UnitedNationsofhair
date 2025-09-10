@@ -7,4 +7,5 @@ urlpatterns = [
     path("<uuid:pk>/approve/", BusinessApproveView.as_view(), name="business-approve"),
     path("<uuid:pk>/reject/", BusinessRejectView.as_view(), name="business-reject"),
     path("list/", BusinessListView.as_view(), name="business-list"),
+
 ]
