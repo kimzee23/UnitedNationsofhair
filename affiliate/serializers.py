@@ -15,10 +15,8 @@ class AffiliateLinkSerializer(serializers.ModelSerializer):
             "code",
             "clicks",
             "is_active",
-            "created_at",
-            "updated_at",
         ]
-        read_only_fields = ["clicks", "created_at", "updated_at", "user"]
+        read_only_fields = ["clicks",  "user"]
 
 
 class SponsoredListingSerializer(serializers.ModelSerializer):
@@ -43,7 +41,6 @@ class SponsoredListingSerializer(serializers.ModelSerializer):
 
 class AdSlotSerializer(serializers.ModelSerializer):
     brand_name = serializers.CharField(source='brand.name', read_only=True)
-
     class Meta:
         model = AdSlot
         fields = [
@@ -51,7 +48,8 @@ class AdSlotSerializer(serializers.ModelSerializer):
             "title",
             "brand",
             "brand_name",
-            "image",
+
+            "image_url",
             "link",
             "slot_type",
             "start_date",

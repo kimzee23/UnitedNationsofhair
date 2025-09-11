@@ -19,10 +19,10 @@ urlpatterns = [
 
     path("products/", ProductListCreateView.as_view(), name="product-list-create"),
     path("products/<uuid:pk>/", ProductDetailView.as_view(), name="product-detail"),
-    path("products/<uuid:pk>/verify/", ProductVerifyView.as_view(), name="product-verify"),
+    path("<uuid:pk>/verify/", ProductVerifyView.as_view(), name="product-verify"),
 
 
-    path("products/<uuid:pk>/related/", RelatedProductsView.as_view(), name="related-products"),
+    path("<uuid:pk>/related/", RelatedProductsView.as_view(), name="related-products"),
     path("products/trending/", TrendingProductsView.as_view(), name="trending-products"),
     path("compare/", ProductCompareView.as_view(), name="product-compare"),
 

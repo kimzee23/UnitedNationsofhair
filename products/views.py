@@ -100,7 +100,7 @@ class RelatedProductsView(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         if not queryset.exists():
-            return Response({"error": "Product not found"}, status=404)
+            return Response({"error": "Related Product not found"}, status=404)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 

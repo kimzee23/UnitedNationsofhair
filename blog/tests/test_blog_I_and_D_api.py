@@ -29,7 +29,7 @@ class BlogArticleAPITestCase(APITestCase):
             role=User.Role.CUSTOMER
         )
 
-        # Create blog articles
+
         self.published_article = BlogArticle.objects.create(
             title="Published Blog",
             slug="published-blog",
@@ -50,13 +50,10 @@ class BlogArticleAPITestCase(APITestCase):
         self.private_detail_url_published = reverse("blog-detail", args=[self.published_article.id])
         self.private_detail_url_unpublished = reverse("blog-detail", args=[self.unpublished_article.id])
 
-        # Public endpoints
+
         self.public_list_url = reverse("public-blog-list")
         self.public_detail_url_published = reverse("public-blog-detail", args=[self.published_article.slug])
         self.public_detail_url_unpublished = reverse("public-blog-detail", args=[self.unpublished_article.slug])
-
-
-    # Public API tests
 
 
     def test_public_can_see_only_published_articles(self):
