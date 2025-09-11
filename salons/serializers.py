@@ -7,7 +7,10 @@ from users.models import User
 
 class SalonSerializer(serializers.ModelSerializer):
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
-    region = serializers.PrimaryKeyRelatedField(queryset=Region.objects.all())
+    region = serializers.SlugRelatedField(
+        slug_field="country_code",
+        queryset=Region.objects.all()
+    )
 
     class Meta:
         model = Salon

@@ -48,6 +48,8 @@ class Stylist(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return f"{self.user.username} - {self.specialization or 'Stylist'} ({self.salon.name})"
 
 class Region(models.Model):
     name = models.CharField(max_length=100)
@@ -55,5 +57,3 @@ class Region(models.Model):
     currency = models.CharField(max_length=10, default="USD")
     language = models.CharField(max_length=20, default="en")
 
-    def __str__(self):
-        return f"{self.user.username} - {self.specialization or 'Stylist'} ({self.salon.name})"

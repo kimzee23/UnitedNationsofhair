@@ -1,9 +1,11 @@
+import uuid
+
 from django.db import models
 from django.utils import timezone
-# from video_encoding.fields import VideoField
+
 
 class BlogArticle(models.Model):
-    id = models.AutoField(primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
     body = models.TextField()

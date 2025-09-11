@@ -20,9 +20,7 @@ class SalonListCreateView(generics.ListCreateAPIView):
         return qs
 
     def perform_create(self, serializer):
-        region_id = self.request.data.get("region")
-        region = get_object_or_404(Region, id=region_id) if region_id else None
-        serializer.save(owner=self.request.user, region=region)
+        serializer.save(owner=self.request.user)
 
 
 class SalonDetailView(generics.RetrieveUpdateDestroyAPIView):

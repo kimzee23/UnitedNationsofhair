@@ -11,7 +11,7 @@ class BlogArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogArticle
         fields = [
-            "id", "title", "slug", "body",
+            "uuid", "title", "slug", "body",
             "excerpt", "seo_title", "seo_description",
             "is_published", "views","published_at",
             "hero_image_url", "hero_image", "tags",
