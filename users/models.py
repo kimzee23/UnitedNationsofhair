@@ -14,7 +14,8 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, username, phone=None, password=None, **extra_fields):
-        extra_fields.setdefault("is_staff", True)
+
+        extra_fields.setdefault("role", User.Role.SUPER_ADMIN)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_verified", True)
         return self.create_user(email, username, phone, password, **extra_fields)
@@ -42,10 +43,11 @@ class User(AbstractUser):
     country = models.CharField(max_length=100, blank=True, null=True)
 
     application_role = models.CharField(
-        max_length=20, choices=Role.choices, null=True, editable=False
+        max_length=20, choices=Role.choices, null=True, blank=True
     )
     application_status = models.CharField(
-        max_length=20, choices=ApplicationStatus.choices, default=ApplicationStatus.NONE, editable=False
+        max_length=20, choices=ApplicationStatus.choices,
+        default=ApplicationStatus.NONE
     )
 
     is_verified = models.BooleanField(default=False)
@@ -57,3 +59,7 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"{self.username} ({self.role})"
+
+    @property
+    def is_admin(self):
+        return self.role == self.Role.SUPER_ADMIN

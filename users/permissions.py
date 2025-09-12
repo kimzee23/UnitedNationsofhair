@@ -1,17 +1,24 @@
 from rest_framework import permissions
 
 
-class IsAdmin(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role == 'SUPER_ADMIN'
+class RolePermission(permissions.BasePermission):
+    allowed_roles = []
 
-class IsVendorOrAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and (
-                request.user.role in ["VENDOR", "SUPER_ADMIN"])
-
-class IsInfluencerOrAdmin(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and (
-            request.user.role in ["INFLUENCER", "SUPER_ADMIN"]
+        return (
+            request.user.is_authenticated
+            and request.user.role in self.allowed_roles
         )
+
+    @classmethod
+    def for_roles(cls, *roles):
+        return type(
+            f"RolePermission_{'_'.join(roles)}",
+            (cls,),
+            {"allowed_roles": roles},
+        )
+
+
+IsAdmin = RolePermission.for_roles("SUPER_ADMIN")
+IsVendorOrAdmin = RolePermission.for_roles("VENDOR", "SUPER_ADMIN")
+IsInfluencerOrAdmin = RolePermission.for_roles("INFLUENCER", "SUPER_ADMIN")

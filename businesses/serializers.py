@@ -3,18 +3,18 @@ from rest_framework import serializers
 from businesses.models import Business, Region
 
 
-class BusinessSerializer(serializers.Serializer):
+class BusinessSerializer(serializers.ModelSerializer):
     region = serializers.SlugRelatedField(
         slug_field="country_code",
-        queryset=Region.objects.all(),
-        required=False,
-        allow_null=True
+        queryset=Region.objects.all()
     )
 
     class Meta:
         model = Business
-        fields =["id", "name","email","phone","address","description",
-                 "kyc_status","region","created_at","updated_at"]
+        fields =[
+            "id", "name","email","phone","address","description",
+                 "kyc_status","region","created_at","updated_at"
+                 ]
         read_only_fields = ["owner"]
 
 

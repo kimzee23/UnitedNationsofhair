@@ -1,3 +1,4 @@
+import re
 import uuid
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import force_str
@@ -15,6 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class RegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)
+    email = serializers.EmailField()
 
     class Meta:
         model = User
@@ -25,8 +27,16 @@ class RegisterSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
-        if data["password"] != data["confirm_password"]:
+        password = data.get("password")
+        confirm_password = data.get("confirm_password")
+        if password != confirm_password:
             raise serializers.ValidationError("Passwords must match")
+        if len(password) < 8:
+            raise serializers.ValidationError("Password must be at least 8 characters long")
+
+        if not re.search(r"\d", password):
+            raise serializers.ValidationError("Password must contain at least one number")
+
         return data
 
     def create(self, validated_data):
@@ -55,6 +65,12 @@ class ResetPasswordSerializer(serializers.Serializer):
     uidb64 = serializers.CharField()
     token = serializers.CharField()
     new_password = serializers.CharField()
+
+    def validate_new_password(self, value):
+        if len(value) < 8:
+            raise serializers.ValidationError("Password must be at least 8 characters long")
+        if not re.search(r"\d", value):
+            raise serializers.ValidationError("Password must contain at least one number")
 
     def validate(self, attrs):
         try:

@@ -51,7 +51,7 @@ class BusinessTestCase(TestCase):
             "phone": "08123456789",
             "address": "Abuja",
             "description": "Hair extension seller",
-            "region": "NG"  # use country_code for input
+            "region": "NG"
         }
         response = self.client.post("/api/v1/businesses/apply/", data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)

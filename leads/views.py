@@ -22,4 +22,9 @@ class LeadListView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
 
 
+    def perform_create(self, serializer):
+        if self.request.user.is_authenticated:
+            serializer.save(user=self.request.user)
+        else:
+            serializer.save()
 
