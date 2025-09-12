@@ -1,8 +1,9 @@
 from django.shortcuts import render
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from businesses.models import Business
 from businesses.serializers import BusinessSerializer
@@ -24,8 +25,11 @@ class BusinessApplyView(generics.CreateAPIView):
     def perform_create(self, serializer):
         if Business.objects.filter(owner=self.request.user).exists():
             raise ValidationError({"detail": "You already have a business."})
-        serializer.save(owner=self.request.user)
+        business = serializer.save(owner=self.request.user)
 
+        if business.region and business.region.country_code in ["NG", "US"]:
+            business.kyc_status = Business.KYCStatus.APPROVED
+            business.save(update_fields=["kyc_status"])
 
 class BusinessDashboardView(generics.RetrieveAPIView):
     serializer_class = BusinessSerializer
@@ -44,7 +48,10 @@ class BusinessApproveView(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         business = self.get_object()
-        business.kyc_status = "APPROVED"
+        if business.kyc_status != Business.KYCStatus.PENDING:
+            return Response({"detail": "Already processed"}, status=status.HTTP_400_BAD_REQUEST)
+
+        business.kyc_status = Business.KYCStatus.APPROVED
         business.save(update_fields=["kyc_status"])
         serializer = self.get_serializer(business)
         return Response(serializer.data)
@@ -56,11 +63,13 @@ class BusinessRejectView(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         business = self.get_object()
-        business.kyc_status = "REJECTED"
+        if business.kyc_status != Business.KYCStatus.PENDING:
+            return Response({"detail": "Already processed"}, status=status.HTTP_400_BAD_REQUEST)
+
+        business.kyc_status = Business.KYCStatus.REJECTED
         business.save(update_fields=["kyc_status"])
         serializer = self.get_serializer(business)
         return Response(serializer.data)
-
 class BusinessListView(generics.ListAPIView):
     serializer_class = BusinessSerializer
     permission_classes = [permissions.AllowAny]
@@ -71,3 +80,28 @@ class BusinessListView(generics.ListAPIView):
         if region:
             country = country.filter(region__country_code__iexact=region)
         return country
+
+class BusinessBulkApproveView(APIView):
+    permission_classes = [IsAdmin]
+
+    def post(self, request):
+        ids = request.data.get("business_ids", [])
+        if not ids:
+            return Response({"detail": "No business IDs provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        queryset = Business.objects.filter(id__in=ids, kyc_status=Business.KYCStatus.PENDING)
+        count = queryset.update(kyc_status=Business.KYCStatus.APPROVED)
+        return Response({"approved_count": count}, status=status.HTTP_200_OK)
+
+
+class BusinessBulkRejectView(APIView):
+    permission_classes = [IsAdmin]
+
+    def post(self, request):
+        ids = request.data.get("business_ids", [])
+        if not ids:
+            return Response({"detail": "No business IDs provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        queryset = Business.objects.filter(id__in=ids, kyc_status=Business.KYCStatus.PENDING)
+        count = queryset.update(kyc_status=Business.KYCStatus.REJECTED)
+        return Response({"rejected_count": count}, status=status.HTTP_200_OK)
