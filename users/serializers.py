@@ -147,3 +147,17 @@ class RoleUpgradeRequestSerializer(serializers.ModelSerializer):
         if value not in [User.Role.INFLUENCER, User.Role.VENDOR]:
             raise serializers.ValidationError("You can only apply for Influencer or Vendor.")
         return value
+
+class VendorApplicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["business_name", "gov_id_number", "certificate"]
+
+    def validate(self, data):
+        if not data.get("business_name"):
+            raise serializers.ValidationError({"business_name": "Business name is required"})
+        if not data.get("gov_id_number"):
+            raise serializers.ValidationError({"gov_id_number": "Government ID number is required"})
+        if not data.get("certificate"):
+            raise serializers.ValidationError({"certificate": "Certificate is required"})
+        return data

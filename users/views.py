@@ -19,7 +19,7 @@ from users.serializers import (
     ForgotPasswordSerializer,
     ResetPasswordSerializer,
     RequestOTPSerializer,
-    VerifyOTPSerializer,
+    VerifyOTPSerializer, VendorApplicationSerializer,
 )
 
 User = get_user_model()
@@ -27,7 +27,9 @@ User = get_user_model()
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
-    return {"access": str(refresh.access_token), "refresh": str(refresh)}
+    return {"access": str(refresh.access_token),
+            "refresh": str(refresh)
+            }
 
 
 class RegisterView(generics.CreateAPIView):
@@ -56,7 +58,11 @@ class RegisterView(generics.CreateAPIView):
                 "id": str(user.id),
                 "email": user.email,
                 "username": user.username,
-                "role": user.role,
+                "role_info": {
+                    "role": user.role,
+                    "application_status": user.application_status,
+                    "application_role": user.application_role,
+                },
                 "message": "Registration successful. Please check your email to verify your account.",
             },
             status=status.HTTP_201_CREATED,
@@ -104,17 +110,41 @@ class LoginView(APIView):
         )
 
 
-class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
+class LoginView(APIView):
+    permission_classes = [AllowAny]
 
     def post(self, request):
-        try:
-            refresh_token = request.data["refresh"]
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-            return Response({"message": "You have been logged out successfully."}, status=status.HTTP_200_OK)
-        except Exception:
-            return Response({"error": "Invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST)
+        email_or_username = request.data.get("username") or request.data.get("email")
+        password = request.data.get("password")
+
+        user = authenticate(username=email_or_username, password=password)
+
+        if not user:
+            try:
+                user_obj = User.objects.get(email=email_or_username)
+                if user_obj.check_password(password):
+                    user = user_obj
+            except User.DoesNotExist:
+                user = None
+
+        if user is None:
+            return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        tokens = get_tokens_for_user(user)
+        return Response(
+            {
+                "id": str(user.id),
+                "email": user.email,
+                "username": user.username,
+                "role_info": {
+                    "role": user.role,
+                    "application_status": user.application_status,
+                    "application_role": user.application_role,
+                },
+                **tokens,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class ForgotPasswordView(APIView):
@@ -200,7 +230,11 @@ class VerifyOTPView(APIView):
             {
                 "id": str(user.id),
                 "email": user.email,
-                "role": user.role,
+                "role":{
+                    "application_status": user.application_status,
+                    "application_role": user.application_role
+
+                },
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),
             },
@@ -228,7 +262,7 @@ class VerifyEmailView(APIView):
 
 
 class ApplyForUpgradeView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         user = request.user
@@ -246,18 +280,26 @@ class ApplyForUpgradeView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Validate requested role
         if requested_role not in [User.Role.INFLUENCER, User.Role.VENDOR]:
             return Response(
                 {"error": "Invalid role requested. Only Influencer or Vendor allowed."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        if requested_role == User.Role.VENDOR:
+            serializer = VendorApplicationSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            user.business_name = serializer.validated_data["business_name"]
+            user.gov_id_number = serializer.validated_data["gov_id_number"]
+            user.certificate = serializer.validated_data["certificate"]
 
         user.application_role = requested_role
         user.application_status = User.ApplicationStatus.PENDING
         user.save()
 
         send_mail(
-            subject="New Upgrade Request from United Nations of Hair",
+            subject=f"New {requested_role} Upgrade Request",
             message=f"User {user.email} has applied to become a {requested_role}. Please review.",
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[settings.ADMIN_EMAIL],
@@ -265,11 +307,9 @@ class ApplyForUpgradeView(APIView):
         )
 
         return Response(
-            {"message": f"Upgrade request submitted for role {requested_role}."},
+            {"message": f"{requested_role} upgrade request submitted successfully."},
             status=status.HTTP_201_CREATED,
         )
-
-
 class ApproveUpgradeView(APIView):
     permission_classes = [permissions.IsAdminUser]
 
@@ -320,3 +360,21 @@ class RejectUpgradeView(APIView):
             fail_silently=True,
         )
         return Response({"message": "Upgrade request rejected."}, status=status.HTTP_200_OK)
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response(
+                {"message": "You have been logged out successfully."},
+                status=status.HTTP_200_OK,
+            )
+        except Exception:
+            return Response(
+                {"error": "Invalid refresh token"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )

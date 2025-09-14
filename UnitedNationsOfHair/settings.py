@@ -55,7 +55,6 @@ INSTALLED_APPS = [
     "products",
     "reviews",
     "influencers",
-    "vendor",
     "blog",
     "cart",
     "wishlist",
@@ -183,6 +182,8 @@ SIMPLE_JWT = {
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "info@unitednationofhaire.com"
 FRONTEND_URL = "http://localhost:3000"
+ADMIN_EMAIL = "admin@unitednationsofhair.com"
+
 
 
 REST_AUTH = {

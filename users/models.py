@@ -64,13 +64,19 @@ class User(AbstractUser):
     )
     country = models.CharField(max_length=100, blank=True, null=True)
 
+    # Upgrade request fields
     application_role = models.CharField(
         max_length=20, choices=Role.choices, null=True, blank=True
     )
     application_status = models.CharField(
-        max_length=20, choices=ApplicationStatus.choices,
+        max_length=20,
+        choices=ApplicationStatus.choices,
         default=ApplicationStatus.NONE
     )
+
+    business_name = models.CharField(max_length=255, blank=True, null=True)
+    gov_id_number = models.CharField(max_length=100, blank=True, null=True)
+    certificate = models.FileField(upload_to="vendors/certificates/", blank=True, null=True)
 
     is_verified = models.BooleanField(default=False)
 

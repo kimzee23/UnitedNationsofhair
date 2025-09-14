@@ -8,7 +8,7 @@ from users.otp_models import EmailOTP
 
 class UserAuthAPITests(APITestCase):
     def setUp(self):
-        self.client: APIClient = self.client
+        self.client: APIClient = APIClient()
         self.signup_url = reverse("signup")
         self.login_url = reverse("login")
         self.logout_url = reverse("logout")
