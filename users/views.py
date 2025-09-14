@@ -4,29 +4,31 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-
-from rest_framework import permissions
 from django.shortcuts import get_object_or_404
-from users.models import User
 
-from users import serializers
+from users.models import User
 from users.otp_models import EmailOTP
-from users.serializers import RegisterSerializer, UserSerializer, ForgotPasswordSerializer, ResetPasswordSerializer, \
-    RequestOTPSerializer, VerifyOTPSerializer
+from users.serializers import (
+    RegisterSerializer,
+    UserSerializer,
+    ForgotPasswordSerializer,
+    ResetPasswordSerializer,
+    RequestOTPSerializer,
+    VerifyOTPSerializer,
+)
 
 User = get_user_model()
 
+
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
-    return {
-        "access": str(refresh.access_token),
-        "refresh": str(refresh),
-    }
+    return {"access": str(refresh.access_token), "refresh": str(refresh)}
+
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -37,7 +39,6 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-
 
         token = default_token_generator.make_token(user)
         verify_url = f"{settings.FRONTEND_URL}/verify-email/?uid={user.pk}&token={token}"
@@ -111,15 +112,11 @@ class LogoutView(APIView):
             refresh_token = request.data["refresh"]
             token = RefreshToken(refresh_token)
             token.blacklist()
-            return Response(
-                {"message": "You have been logged out successfully."},
-                status=status.HTTP_200_OK,
-            )
+            return Response({"message": "You have been logged out successfully."}, status=status.HTTP_200_OK)
         except Exception:
-            return Response(
-                {"error": "Invalid refresh token"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response({"error": "Invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class ForgotPasswordView(APIView):
     permission_classes = [AllowAny]
 
@@ -144,9 +141,11 @@ class ForgotPasswordView(APIView):
         )
         return Response({"message": "Password reset link sent to your email."}, status=status.HTTP_200_OK)
 
+
 class ResetPasswordView(generics.GenericAPIView):
     authentication_classes = []
-    permission_classes =  []
+    permission_classes = []
+
     def post(self, request, *args, **kwargs):
         uidb64 = request.data.get("uidb64")
         token = request.data.get("token")
@@ -163,8 +162,8 @@ class ResetPasswordView(generics.GenericAPIView):
 
         user.set_password(new_password)
         user.save()
-
         return Response({"message": "Password has been reset successfully."}, status=status.HTTP_200_OK)
+
 
 class RequestOTPView(APIView):
     permission_classes = [AllowAny]
@@ -175,10 +174,7 @@ class RequestOTPView(APIView):
         email = serializer.validated_data["email"]
 
         otp = EmailOTP.generate_otp()
-        EmailOTP.objects.update_or_create(
-            email=email,
-            defaults={"otp": otp, "is_verified": False}
-        )
+        EmailOTP.objects.update_or_create(email=email, defaults={"otp": otp, "is_verified": False})
 
         send_mail(
             subject="Your OTP Code",
@@ -210,6 +206,8 @@ class VerifyOTPView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
 class VerifyEmailView(APIView):
     permission_classes = [AllowAny]
 
@@ -229,7 +227,6 @@ class VerifyEmailView(APIView):
         return Response({"error": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class ApplyForUpgradeView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -240,7 +237,7 @@ class ApplyForUpgradeView(APIView):
         if user.role != User.Role.CUSTOMER:
             return Response(
                 {"error": f"You are already a {user.role}. Upgrade not allowed."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         if user.application_status == User.ApplicationStatus.PENDING:
@@ -258,7 +255,6 @@ class ApplyForUpgradeView(APIView):
         user.application_role = requested_role
         user.application_status = User.ApplicationStatus.PENDING
         user.save()
-
 
         send_mail(
             subject="New Upgrade Request from United Nations of Hair",
@@ -281,10 +277,7 @@ class ApproveUpgradeView(APIView):
         user = get_object_or_404(User, id=user_id)
 
         if user.application_status != User.ApplicationStatus.PENDING:
-            return Response(
-                {"error": "No pending request to approve."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response({"error": "No pending request to approve."}, status=status.HTTP_400_BAD_REQUEST)
 
         user.role = user.application_role
         user.application_status = User.ApplicationStatus.APPROVED
@@ -299,15 +292,12 @@ class ApproveUpgradeView(APIView):
         send_mail(
             subject="Upgrade Approved",
             message=f"Congratulations! Your upgrade to {user.role} has been approved. "
-                    f"You can now access your dashboard here: {dashboard_url}",
+            f"You can now access your dashboard here: {dashboard_url}",
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
             fail_silently=True,
         )
-        return Response(
-            {"message": f"User upgraded to {user.role}.", "redirect_url": dashboard_url},
-            status=status.HTTP_200_OK,
-        )
+        return Response({"message": f"User upgraded to {user.role}.", "redirect_url": dashboard_url}, status=status.HTTP_200_OK)
 
 
 class RejectUpgradeView(APIView):
@@ -317,10 +307,8 @@ class RejectUpgradeView(APIView):
         user = get_object_or_404(User, id=user_id)
 
         if user.application_status != User.ApplicationStatus.PENDING:
-            return Response(
-                {"error": "No pending request to reject."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response({"error": "No pending request to reject."}, status=status.HTTP_400_BAD_REQUEST)
+
         user.application_status = User.ApplicationStatus.REJECTED
         user.save()
 

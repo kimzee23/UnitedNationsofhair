@@ -1,4 +1,5 @@
 from rest_framework import permissions
+from users.models import User
 
 
 class RolePermission(permissions.BasePermission):
@@ -18,7 +19,6 @@ class RolePermission(permissions.BasePermission):
             {"allowed_roles": roles},
         )
 
-
-IsAdmin = RolePermission.for_roles("SUPER_ADMIN")
-IsVendorOrAdmin = RolePermission.for_roles("VENDOR", "SUPER_ADMIN")
-IsInfluencerOrAdmin = RolePermission.for_roles("INFLUENCER", "SUPER_ADMIN")
+IsAdmin = RolePermission.for_roles(User.Role.SUPER_ADMIN)
+IsVendorOrAdmin = RolePermission.for_roles(User.Role.VENDOR, User.Role.SUPER_ADMIN)
+IsInfluencerOrAdmin = RolePermission.for_roles(User.Role.INFLUENCER, User.Role.SUPER_ADMIN)

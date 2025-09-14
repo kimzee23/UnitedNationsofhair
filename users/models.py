@@ -14,12 +14,34 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, username, phone=None, password=None, **extra_fields):
-
+        """
+        Create and return a superuser.
+        """
         extra_fields.setdefault("role", User.Role.SUPER_ADMIN)
         extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_verified", True)
         return self.create_user(email, username, phone, password, **extra_fields)
 
+    def create_staff(self, email, username, phone=None, password=None, **extra_fields):
+        """
+        Create and return a staff user (admin but not superuser).
+        """
+        extra_fields.setdefault("role", User.Role.SUPER_ADMIN)
+        extra_fields.setdefault("is_superuser", False)
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_verified", True)
+        return self.create_user(email, username, phone, password, **extra_fields)
+
+    def create_vendor(self, email, username, phone=None, password=None, **extra_fields):
+        """
+        Create and return a vendor account (pending verification).
+        """
+        extra_fields.setdefault("role", User.Role.VENDOR)
+        extra_fields.setdefault("is_superuser", False)
+        extra_fields.setdefault("is_staff", False)
+        extra_fields.setdefault("is_verified", False)
+        return self.create_user(email, username, phone, password, **extra_fields)
 
 class User(AbstractUser):
     class Role(models.TextChoices):

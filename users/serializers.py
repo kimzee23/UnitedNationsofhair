@@ -1,5 +1,4 @@
 import re
-import uuid
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
@@ -20,7 +19,16 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "email", "username", "phone", "country", "password", "confirm_password", "role"]
+        fields = [
+            "id",
+            "email",
+            "username",
+            "phone",
+            "country",
+            "password",
+            "confirm_password",
+            "role",
+        ]
         extra_kwargs = {
             "password": {"write_only": True},
             "role": {"default": User.Role.CUSTOMER},
@@ -29,11 +37,11 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate(self, data):
         password = data.get("password")
         confirm_password = data.get("confirm_password")
+
         if password != confirm_password:
             raise serializers.ValidationError("Passwords must match")
         if len(password) < 8:
             raise serializers.ValidationError("Password must be at least 8 characters long")
-
         if not re.search(r"\d", password):
             raise serializers.ValidationError("Password must contain at least one number")
 
@@ -71,6 +79,7 @@ class ResetPasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError("Password must be at least 8 characters long")
         if not re.search(r"\d", value):
             raise serializers.ValidationError("Password must contain at least one number")
+        return value
 
     def validate(self, attrs):
         try:
@@ -109,8 +118,8 @@ class VerifyOTPSerializer(serializers.Serializer):
     otp = serializers.CharField(max_length=6)
 
     def validate(self, data):
-        email = data['email']
-        otp = data['otp']
+        email = data["email"]
+        otp = data["otp"]
 
         try:
             otp_obj = EmailOTP.objects.get(email=email, otp=otp)
@@ -124,8 +133,9 @@ class VerifyOTPSerializer(serializers.Serializer):
         if not user:
             raise serializers.ValidationError("User not found")
 
-        data['user'] = user
+        data["user"] = user
         return data
+
 
 class RoleUpgradeRequestSerializer(serializers.ModelSerializer):
     class Meta:
