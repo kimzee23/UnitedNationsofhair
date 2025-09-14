@@ -28,7 +28,7 @@ class Command(BaseCommand):
             username=username,
             phone=phone,
             password=password,
-            is_staff=True,   # staff flag
+            is_staff=True,
             is_verified=True
         )
 
