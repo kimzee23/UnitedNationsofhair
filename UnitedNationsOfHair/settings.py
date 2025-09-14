@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "products",
     "reviews",
     "influencers",
+    "vendor",
     "blog",
     "cart",
     "wishlist",

@@ -11,6 +11,12 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
+from UnitedNationsOfHair import settings
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'UnitedNationsOfHair.settings')
 
 application = get_wsgi_application()
+
+if settings.DEBUG:
+    from users.models import User
+    User.objects.get_or_create(email="superadmin@example.com", defaults={"username": "superadmin", "password": "superpass"})
