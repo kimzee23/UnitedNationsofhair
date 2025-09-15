@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.tokens import default_token_generator, PasswordResetTokenGenerator
 from django.core.mail import send_mail
 from django.conf import settings
+from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from rest_framework import generics, status, permissions
@@ -110,41 +111,41 @@ class LoginView(APIView):
         )
 
 
-class LoginView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        email_or_username = request.data.get("username") or request.data.get("email")
-        password = request.data.get("password")
-
-        user = authenticate(username=email_or_username, password=password)
-
-        if not user:
-            try:
-                user_obj = User.objects.get(email=email_or_username)
-                if user_obj.check_password(password):
-                    user = user_obj
-            except User.DoesNotExist:
-                user = None
-
-        if user is None:
-            return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
-
-        tokens = get_tokens_for_user(user)
-        return Response(
-            {
-                "id": str(user.id),
-                "email": user.email,
-                "username": user.username,
-                "role_info": {
-                    "role": user.role,
-                    "application_status": user.application_status,
-                    "application_role": user.application_role,
-                },
-                **tokens,
-            },
-            status=status.HTTP_200_OK,
-        )
+# class LoginView(APIView):
+#     permission_classes = [AllowAny]
+#
+#     def post(self, request):
+#         email_or_username = request.data.get("username") or request.data.get("email")
+#         password = request.data.get("password")
+#
+#         user = authenticate(username=email_or_username, password=password)
+#
+#         if not user:
+#             try:
+#                 user_obj = User.objects.get(email=email_or_username)
+#                 if user_obj.check_password(password):
+#                     user = user_obj
+#             except User.DoesNotExist:
+#                 user = None
+#
+#         if user is None:
+#             return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+#
+#         tokens = get_tokens_for_user(user)
+#         return Response(
+#             {
+#                 "id": str(user.id),
+#                 "email": user.email,
+#                 "username": user.username,
+#                 "role_info": {
+#                     "role": user.role,
+#                     "application_status": user.application_status,
+#                     "application_role": user.application_role,
+#                 },
+#                 **tokens,
+#             },
+#             status=status.HTTP_200_OK,
+#         )
 
 
 class ForgotPasswordView(APIView):
@@ -204,7 +205,15 @@ class RequestOTPView(APIView):
         email = serializer.validated_data["email"]
 
         otp = EmailOTP.generate_otp()
-        EmailOTP.objects.update_or_create(email=email, defaults={"otp": otp, "is_verified": False})
+
+        EmailOTP.objects.update_or_create(
+            email=email,
+            defaults={
+                "otp": otp,
+                "is_verified": False,
+                "created_at": timezone.now(),
+            },
+        )
 
         send_mail(
             subject="Your OTP Code",
@@ -214,8 +223,10 @@ class RequestOTPView(APIView):
             fail_silently=True,
         )
 
-        return Response({"message": "OTP sent successfully."}, status=status.HTTP_200_OK)
-
+        return Response(
+            {"message": "OTP sent successfully."},
+            status=status.HTTP_200_OK,
+        )
 
 class VerifyOTPView(APIView):
     permission_classes = [AllowAny]
@@ -243,24 +254,30 @@ class VerifyOTPView(APIView):
 
 
 class VerifyEmailView(APIView):
-    permission_classes = [AllowAny]
+    def post(self, request):
+        uid = request.data.get("uid")
+        token = request.data.get("token")
 
-    def get(self, request):
-        uid = request.query_params.get("uid")
-        token = request.query_params.get("token")
+        if not uid or not token:
+            return Response({"error": "UID and token are required."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            user = User.objects.get(pk=uid)
-        except User.DoesNotExist:
+            uid_decoded = force_str(urlsafe_base64_decode(uid))
+            user = User.objects.get(pk=uid_decoded)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             return Response({"error": "Invalid UID"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if default_token_generator.check_token(user, token):
-            user.is_verified = True
-            user.save()
-            return Response({"message": "Email verified successfully!"}, status=status.HTTP_200_OK)
-        return Response({"error": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
+        # now validate token (if using PasswordResetTokenGenerator or similar)
+        from django.contrib.auth.tokens import default_token_generator
 
+        if not default_token_generator.check_token(user, token):
+            return Response({"error": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
 
+        # ✅ mark email verified
+        user.is_active = True
+        user.save(update_fields=["is_active"])
+
+        return Response({"message": "Email verified successfully!"}, status=status.HTTP_200_OK)
 class ApplyForUpgradeView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -280,7 +297,6 @@ class ApplyForUpgradeView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Validate requested role
         if requested_role not in [User.Role.INFLUENCER, User.Role.VENDOR]:
             return Response(
                 {"error": "Invalid role requested. Only Influencer or Vendor allowed."},
@@ -317,7 +333,10 @@ class ApproveUpgradeView(APIView):
         user = get_object_or_404(User, id=user_id)
 
         if user.application_status != User.ApplicationStatus.PENDING:
-            return Response({"error": "No pending request to approve."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "No pending request to approve."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         user.role = user.application_role
         user.application_status = User.ApplicationStatus.APPROVED
@@ -331,13 +350,24 @@ class ApproveUpgradeView(APIView):
 
         send_mail(
             subject="Upgrade Approved",
-            message=f"Congratulations! Your upgrade to {user.role} has been approved. "
-            f"You can now access your dashboard here: {dashboard_url}",
+            message=(
+                f"Congratulations! Your upgrade to {user.role} has been approved. "
+                f"You can now access your dashboard here: {dashboard_url}"
+            ),
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
             fail_silently=True,
         )
-        return Response({"message": f"User upgraded to {user.role}.", "redirect_url": dashboard_url}, status=status.HTTP_200_OK)
+
+        return Response(
+            {
+                "message": f"User upgraded to {user.role}.",
+                "application_status": user.application_status,
+                "redirect_url": dashboard_url,
+            },
+            status=status.HTTP_200_OK,
+        )
+
 
 
 class RejectUpgradeView(APIView):
