@@ -273,7 +273,7 @@ class VerifyEmailView(APIView):
         if not default_token_generator.check_token(user, token):
             return Response({"error": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # ✅ mark email verified
+
         user.is_active = True
         user.save(update_fields=["is_active"])
 

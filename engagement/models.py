@@ -11,9 +11,9 @@ class Comment(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # Generic relation (can comment on blogs, products, influencers, etc.)
-    content_type = models.CharField(max_length=50)  # e.g. "blog", "product"
-    object_id = models.UUIDField()  # ID of the target object
+
+    content_type = models.CharField(max_length=90)
+    object_id = models.UUIDField()
 
     def __str__(self):
         return f"{self.user} commented on {self.content_type}"
@@ -24,7 +24,7 @@ class Like(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="likes")
     created_at = models.DateTimeField(auto_now_add=True)
 
-    content_type = models.CharField(max_length=50)  # e.g. "blog", "product"
+    content_type = models.CharField(max_length=90)
     object_id = models.UUIDField()
 
     class Meta:
