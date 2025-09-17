@@ -10,7 +10,7 @@ from orders.models import Order, OrderStatus
 
 class OrdersAPITestCase(APITestCase):
     def setUp(self):
-        self.client: APIClient = self.client
+        self.client: APIClient = APIClient()
 
         # Vendor
         self.vendor = User.objects.create_user(
@@ -44,7 +44,7 @@ class OrdersAPITestCase(APITestCase):
         CartItem.objects.create(user=self.customer, product=self.product, quantity=2)
         self.authenticate(self.customer)
 
-        checkout_url = reverse("checkout")  # from orders/urls.py
+        checkout_url = reverse("order-checkout")
         payload = {
             "shipping_full_name": "John Doe",
             "shipping_phone": "080456789",
