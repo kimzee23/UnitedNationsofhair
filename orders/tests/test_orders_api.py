@@ -1,6 +1,5 @@
 from rest_framework.test import APIClient, APITestCase
 from django.urls import reverse
-from rest_framework.test import APIClient
 from rest_framework import status
 
 from users.models import User
@@ -11,7 +10,7 @@ from orders.models import Order, OrderStatus
 
 class OrdersAPITestCase(APITestCase):
     def setUp(self):
-        self.client : APIClient = self.client
+        self.client: APIClient = self.client
 
         # Vendor
         self.vendor = User.objects.create_user(
@@ -22,11 +21,10 @@ class OrdersAPITestCase(APITestCase):
         self.category = Category.objects.create(name="Shampoo", slug="shampoo")
 
         # Customer
-        self.customer = (User.objects.create_user
-            (
+        self.customer = User.objects.create_user(
             username="customer1", email="cust@example.com",
             password="pass123", role="CUSTOMER"
-        ))
+        )
 
         # Product
         self.product = Product.objects.create(
@@ -41,12 +39,12 @@ class OrdersAPITestCase(APITestCase):
     def authenticate(self, user):
         self.client.force_authenticate(user=user)
 
-    def test_checkout_and_pay_order(self):
-        """Customer can check out cart and pay dummy"""
+    def test_checkout_and_init_payment(self):
+        """Customer can checkout cart and initialize a payment (Paystack)"""
         CartItem.objects.create(user=self.customer, product=self.product, quantity=2)
         self.authenticate(self.customer)
 
-        checkout_url = reverse("order-checkout")
+        checkout_url = reverse("checkout")  # from orders/urls.py
         payload = {
             "shipping_full_name": "John Doe",
             "shipping_phone": "080456789",
@@ -65,14 +63,11 @@ class OrdersAPITestCase(APITestCase):
         self.assertEqual(res.data["status"], OrderStatus.PENDING)
         self.assertEqual(float(res.data["total_amount"]), 20.00)
 
-        # Pay
-        pay_url = reverse("order-pay", args=[order_id])
-        res2 = self.client.patch(pay_url)
+        # Init payment
+        pay_url = reverse("payment-init", args=[order_id])
+        res2 = self.client.post(pay_url, {"provider": "PAYSTACK"}, format="json")
         self.assertEqual(res2.status_code, status.HTTP_200_OK, res2.data)
-        self.assertIn("Payment successful", res2.data["message"])
-
-        order = Order.objects.get(id=order_id)
-        self.assertEqual(order.status, OrderStatus.PAID)
+        self.assertIn("data", res2.data) or self.assertIn("authorization_url", str(res2.data))
 
     def test_admin_can_update_status(self):
         """Only admin can move orders through statuses"""

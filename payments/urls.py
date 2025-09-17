@@ -1,12 +1,15 @@
+# payments/urls.py
 from django.urls import path
-from payments.views import PaymentInitView, PaystackWebhookView, PaymentVerifyView
+from .views import (
+    PaymentInitView,
+    PaystackWebhookView,
+    PayPalExecuteView,
+)
 
 urlpatterns = [
-
     path("<uuid:pk>/init/", PaymentInitView.as_view(), name="payment-init"),
 
-    # # Verify payment manually (customer returns from gateway)
-    path("<uuid:pk>/verify/", PaymentVerifyView.as_view(), name="payment-verify"),
-    path("webhook/paystack/", PaystackWebhookView.as_view(), name="paystack-webhook"),
+    path("paystack/webhook/", PaystackWebhookView.as_view(), name="paystack-webhook"),
 
+    path("paypal/execute/", PayPalExecuteView.as_view(), name="paypal-execute"),
 ]
