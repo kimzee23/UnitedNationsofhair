@@ -1,5 +1,4 @@
 from uuid import uuid4
-
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
@@ -46,47 +45,30 @@ class SalonAPITestCase(APITestCase):
         )
 
     def test_create_salon(self):
+        """Vendor should be able to create a new salon"""
         self.client.force_authenticate(user=self.vendor)
         url = reverse("salons-list-create")
-        data = {
+
+        payload = {
             "name": "New Salon",
             "phone": "08087654321",
             "website": "https://new-salon.com",
             "address": "123 Main Street",
             "city": "Lagos",
             "country": "Nigeria",
-            "region": str(self.region.id)
+            "region": "NG"   # ✅ matches SlugRelatedField
         }
-        response = self.client.post(url, data)
+
+        response = self.client.post(url, payload, format="json")
+        if response.status_code != status.HTTP_201_CREATED:
+            print("Create Salon Error:", response.data)
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["name"], "New Salon")
-        self.assertEqual(str(response.data["region"]), str(self.region.id))
-
-    def test_create_stylist(self):
-        self.client.force_authenticate(user=self.vendor)
-
-        # Create a new unique user for this stylist
-        stylist_user = User.objects.create_user(
-            email=f"stylist_{uuid4()}@example.com",
-            username=f"stylist_{uuid4()}",
-            password="stylist123",
-            role=User.Role.VENDOR
-        )
-
-        url = reverse("stylists-list-create")
-        data = {
-            "salon": str(self.salon.id),
-            "user": str(stylist_user.id),
-            "specialization": "Hair Coloring",
-            "experience_level": 1
-        }
-        response = self.client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data["specialization"], "Hair Coloring")
-        self.assertEqual(str(response.data["salon"]), str(self.salon.id))
-
+        self.assertEqual(response.data["region"], "NG")   # ✅ region returned as slug
 
     def test_list_salon_super_admin(self):
+        """Super admin should see all salons"""
         self.client.force_authenticate(user=self.admin)
         url = reverse("salons-list-create")
         response = self.client.get(url)
@@ -96,9 +78,8 @@ class SalonAPITestCase(APITestCase):
 
 class StylistAPITestCase(APITestCase):
     def setUp(self):
-        self.client = APIClient()
+        self.client : APIClient = APIClient()
 
-        # Vendor user
         self.vendor = User.objects.create_user(
             email=f"vendor_{uuid4()}@example.com",
             username=f"vendor_{uuid4()}",
@@ -106,15 +87,12 @@ class StylistAPITestCase(APITestCase):
             role=User.Role.VENDOR
         )
 
-        # Region
         self.region = Region.objects.create(
             name="Global",
             country_code="NG",
             currency="NGN",
             language="en"
         )
-
-        # Salon
         self.salon = Salon.objects.create(
             name="Glamour Hair",
             owner=self.vendor,
@@ -125,14 +103,13 @@ class StylistAPITestCase(APITestCase):
             country="Nigeria",
             region=self.region
         )
-
-        # Create a stylist with a **different user**
         self.stylist_user = User.objects.create_user(
             email=f"stylist_{uuid4()}@example.com",
             username=f"stylist_{uuid4()}",
             password="stylist123",
             role=User.Role.VENDOR
         )
+
         self.stylist = Stylist.objects.create(
             user=self.stylist_user,
             salon=self.salon,
@@ -142,6 +119,7 @@ class StylistAPITestCase(APITestCase):
         )
 
     def test_create_stylist(self):
+        """Vendor should be able to add a stylist to their salon"""
         self.client.force_authenticate(user=self.vendor)
 
         new_stylist_user = User.objects.create_user(
@@ -152,19 +130,23 @@ class StylistAPITestCase(APITestCase):
         )
 
         url = reverse("stylists-list-create")
-        data = {
+        payload = {
             "user": str(new_stylist_user.id),
             "salon": str(self.salon.id),
             "specialization": "Hair Styling",
             "experience_level": 1,
             "website": "https://newstylist.com"
         }
-        response = self.client.post(url, data)
+        response = self.client.post(url, payload, format="json")
+        if response.status_code != status.HTTP_201_CREATED:
+            print("Create Stylist Error:", response.data)
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["specialization"], "Hair Styling")
         self.assertEqual(str(response.data["salon"]), str(self.salon.id))
 
     def test_list_stylist(self):
+        """Vendor should see stylists under their salons"""
         self.client.force_authenticate(user=self.vendor)
         url = reverse("stylists-list-create")
         response = self.client.get(url)
