@@ -100,52 +100,256 @@ The project uses environment variables for configuration. Ensure the following a
 
 ### User Management
 
-* **Register User**
+The Users module supports multiple account types:
 
-  * `POST /api/users/register/`
+* **CUSTOMER** – Default user role.
+* **VENDOR** – Can sell products; must be verified.
+* **INFLUENCER** – Optional role for promotion or marketing.
+* **SUPER_ADMIN** – Full administrative control.
 
-  * Request Body:
+It also manages:
 
-    ```json
-    {
-      "username": "john_doe",
-      "email": "john@example.com",
-      "password": "securepassword123"
-    }
-    ```
+* User registration, login, and profile updates.
+* Role upgrade applications.
+* Vendor verification with certificates and government ID.
 
-  * Response:
+---
 
-    ```json
-    {
-      "id": 1,
-      "username": "john_doe",
-      "email": "john@example.com"
-    }
-    ```
+## Installation
 
-* **Login User**
+1. Clone the repository:
 
-  * `POST /api/users/login/`
+```bash
+git clone https://github.com/kimzee23/UnitedNationsofhair.git
+cd UnitedNationsofhair
+```
 
-  * Request Body:
+2. Set up a virtual environment and activate it:
 
-    ```json
-    {
-      "username": "john_doe",
-      "password": "securepassword123"
-    }
-    ```
+```bash
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+```
 
-  * Response:
+3. Install dependencies:
 
-    ```json
-    {
-      "token": "jwt_token_here"
-    }
-    ```
+```bash
+pip install -r requirements.txt
+```
 
-### Product Management
+4. Apply database migrations:
+
+```bash
+python manage.py migrate
+```
+
+5. Create a superuser:
+
+```bash
+python manage.py createsuperuser
+```
+
+6. Run the server:
+
+```bash
+python manage.py runserver
+```
+
+---
+
+## Configuration
+
+Add environment variables in a `.env` file:
+
+```text
+SECRET_KEY=your_secret_key
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+DATABASE_URL=your_database_url
+```
+
+---
+
+## User Model Fields
+
+| Field                | Type    | Description                                       |
+| -------------------- | ------- | ------------------------------------------------- |
+| `id`                 | UUID    | Primary key                                       |
+| `username`           | String  | Unique username                                   |
+| `email`              | Email   | Unique email, login identifier                    |
+| `phone`              | String  | Optional, unique                                  |
+| `role`               | Enum    | `CUSTOMER`, `VENDOR`, `INFLUENCER`, `SUPER_ADMIN` |
+| `country`            | String  | Optional user country                             |
+| `application_role`   | Enum    | Role requested for upgrade                        |
+| `application_status` | Enum    | `NONE`, `PENDING`, `APPROVED`, `REJECTED`         |
+| `business_name`      | String  | Optional, for vendors                             |
+| `gov_id_number`      | String  | Optional, for vendors                             |
+| `certificate`        | File    | Vendor certificate                                |
+| `is_verified`        | Boolean | Verification status                               |
+
+---
+
+## API Endpoints
+
+### Register User
+
+* **Endpoint**: `POST /api/users/register/`
+* **Request Body**:
+
+```json
+{
+  "username": "john_doe",
+  "email": "john@example.com",
+  "password": "securepassword123",
+  "phone": "08012345678",
+  "country": "Nigeria"
+}
+```
+
+* **Response**:
+
+```json
+{
+  "id": "uuid_here",
+  "username": "john_doe",
+  "email": "john@example.com",
+  "role": "CUSTOMER",
+  "is_verified": false
+}
+```
+
+---
+
+### Login User
+
+* **Endpoint**: `POST /api/users/login/`
+* **Request Body**:
+
+```json
+{
+  "email": "john@example.com",
+  "password": "securepassword123"
+}
+```
+
+* **Response**:
+
+```json
+{
+  "token": "jwt_token_here",
+  "user": {
+    "id": "uuid_here",
+    "username": "john_doe",
+    "email": "john@example.com",
+    "role": "CUSTOMER"
+  }
+}
+```
+
+---
+
+### Get Profile
+
+* **Endpoint**: `GET /api/users/profile/`
+* **Headers**: `Authorization: Bearer <token>`
+* **Response**:
+
+```json
+{
+  "id": "uuid_here",
+  "username": "john_doe",
+  "email": "john@example.com",
+  "phone": "08012345678",
+  "role": "CUSTOMER",
+  "country": "Nigeria",
+  "application_role": null,
+  "application_status": "NONE",
+  "is_verified": false
+}
+```
+
+---
+
+### Update Profile
+
+* **Endpoint**: `PATCH /api/users/profile/`
+* **Request Body**: (Optional fields)
+
+```json
+{
+  "phone": "08098765432",
+  "country": "Nigeria"
+}
+```
+
+* **Response**: Updated profile JSON.
+
+---
+
+### Request Vendor Role Upgrade
+
+* **Endpoint**: `POST /api/users/apply-vendor/`
+* **Request Body**:
+
+```json
+{
+  "application_role": "VENDOR",
+  "business_name": "Hair Haven",
+  "gov_id_number": "A1234567",
+  "certificate": "file_upload_here"
+}
+```
+
+* **Response**:
+
+```json
+{
+  "message": "Your application has been submitted",
+  "application_status": "PENDING"
+}
+```
+
+---
+
+### Admin Approve/Reject Application
+
+* **Endpoint**: `PATCH /api/users/application/{user_id}/`
+* **Request Body**:
+
+```json
+{
+  "application_status": "APPROVED"
+}
+```
+
+* **Response**:
+
+```json
+{
+  "id": "uuid_here",
+  "application_status": "APPROVED",
+  "role": "VENDOR",
+  "is_verified": true
+}
+```
+
+---
+
+## Testing
+
+Run Django tests:
+
+```bash
+python manage.py test users
+```
+
+This includes tests for:
+
+* Registration
+* Login
+* Profile retrieval & update
+* Vendor role application and approval
+
 
 * **List Products**
 
@@ -252,3 +456,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 If you need further assistance or have questions about the API endpoints, feel free to open an issue in the repository.
+
