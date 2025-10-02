@@ -353,40 +353,169 @@ This includes tests for:
 
 * **List Products**
 
-  * `GET /api/products/`
-  * Response:
+  Vendors to create and manage brands and products.
 
-    ```json
-    [
-      {
-        "id": 1,
-        "name": "Brazilian Hair Bundle",
-        "price": 100,
-        "description": "High-quality Brazilian hair bundle."
-      },
-      {
-        "id": 2,
-        "name": "Peruvian Hair Bundle",
-        "price": 120,
-        "description": "Luxurious Peruvian hair bundle."
-      }
-    ]
-    ```
+Categorization of products into hierarchical categories.
 
-* **Product Details**
+Users to compare products.
 
-  * `GET /api/products/{id}/`
-  * Response:
+Admins to verify products.
 
-    ```json
-    {
-      "id": 1,
-      "name": "Brazilian Hair Bundle",
-      "price": 100,
-      "description": "High-quality Brazilian hair bundle."
-    }
-    ```
 
+Run the server:
+
+python manage.py runserver
+
+Models
+Brand
+
+Fields:
+
+id (UUID)
+
+name (string)
+
+description (text, optional)
+
+website (URL, optional)
+
+country (string, optional)
+
+owner (ForeignKey to User with role VENDOR)
+
+Category
+
+Fields:
+
+id (UUID)
+
+name (string)
+
+slug (unique)
+
+parent (self-referencing, optional)
+
+Product
+
+Fields:
+
+id (UUID)
+
+name (string)
+
+price (decimal, optional)
+
+stock (integer, default 0)
+
+affiliate_url (URL, optional)
+
+image_url (URL, optional)
+
+image (file, optional)
+
+is_verified (boolean)
+
+brand (ForeignKey to Brand)
+
+category (ForeignKey to Category, optional)
+
+created_at / updated_at
+
+ProductCompare
+
+Fields:
+
+user (ForeignKey to User)
+
+products (ManyToManyField to Product)
+
+created_at (timestamp)
+
+API Endpoints
+Brands
+
+List Brands: GET /api/brands/
+
+Create Brand: POST /api/brands/ (Vendors only)
+
+{
+  "name": "Hair Haven",
+  "description": "Premium hair brand",
+  "website": "https://hairhaven.com",
+  "country": "Nigeria"
+}
+
+
+Brand Details: GET /api/brands/{id}/
+
+Update Brand: PATCH /api/brands/{id}/
+
+Delete Brand: DELETE /api/brands/{id}/
+
+Categories
+
+List Categories: GET /api/categories/
+
+Create Category: POST /api/categories/
+
+{
+  "name": "Bundles",
+  "slug": "bundles",
+  "parent": "parent_category_id_optional"
+}
+
+
+Category Details: GET /api/categories/{id}/
+
+Update Category: PATCH /api/categories/{id}/
+
+Delete Category: DELETE /api/categories/{id}/
+
+Products
+
+List Products: GET /api/products/
+
+Create Product: POST /api/products/ (Vendor only)
+
+{
+  "name": "Brazilian Hair Bundle",
+  "price": 100,
+  "stock": 50,
+  "brand": "brand_id",
+  "category": "category_id",
+  "affiliate_url": "https://affiliate.com",
+  "image_url": "https://image.com/image.jpg"
+}
+
+
+Product Details: GET /api/products/{id}/
+
+Update Product: PATCH /api/products/{id}/
+
+Delete Product: DELETE /api/products/{id}/
+
+Verify Product: PATCH /api/products/{id}/verify (Admin only)
+
+Product Comparison
+
+Compare Products: POST /api/products/compare/
+
+{
+  "user": "user_id",
+  "products": ["product_id1", "product_id2"]
+}
+
+
+Get User Comparisons: GET /api/products/compare/?user=user_id
+
+Testing
+
+Run the module tests:
+
+python manage.py test products
+
+
+Tests include:
 ### Order Management
 
 * **Create Order**
@@ -456,4 +585,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 If you need further assistance or have questions about the API endpoints, feel free to open an issue in the repository.
+
 
