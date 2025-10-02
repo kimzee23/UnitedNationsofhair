@@ -353,166 +353,146 @@ This includes tests for:
 
 * **List Products**
 
-  Vendors to create and manage brands and products.
+ 
 
-Categorization of products into hierarchical categories.
+## Models
 
-Users to compare products.
+### Brand
+
+* **Fields**:
+
+  * `id` (UUID)
+  * `name` (string)
+  * `description` (text, optional)
+  * `website` (URL, optional)
+  * `country` (string, optional)
+  * `owner` (ForeignKey to User with role VENDOR)
 
-Admins to verify products.
+### Category
 
+* **Fields**:
 
-Run the server:
+  * `id` (UUID)
+  * `name` (string)
+  * `slug` (unique)
+  * `parent` (self-referencing, optional)
+
+### Product
+
+* **Fields**:
 
-python manage.py runserver
+  * `id` (UUID)
+  * `name` (string)
+  * `price` (decimal, optional)
+  * `stock` (integer, default 0)
+  * `affiliate_url` (URL, optional)
+  * `image_url` (URL, optional)
+  * `image` (file, optional)
+  * `is_verified` (boolean)
+  * `brand` (ForeignKey to Brand)
+  * `category` (ForeignKey to Category, optional)
+  * `created_at` / `updated_at`
 
-Models
-Brand
+### ProductCompare
 
-Fields:
+* **Fields**:
 
-id (UUID)
+  * `user` (ForeignKey to User)
+  * `products` (ManyToManyField to Product)
+  * `created_at` (timestamp)
 
-name (string)
+---
 
-description (text, optional)
+## API Endpoints
 
-website (URL, optional)
+### Brands
 
-country (string, optional)
+* **List Brands**: `GET /api/brands/`
+* **Create Brand**: `POST /api/brands/` (Vendors only)
 
-owner (ForeignKey to User with role VENDOR)
+  ```json
+  {
+    "name": "Hair Haven",
+    "description": "Premium hair brand",
+    "website": "https://hairhaven.com",
+    "country": "Nigeria"
+  }
+  ```
+* **Brand Details**: `GET /api/brands/{id}/`
+* **Update Brand**: `PATCH /api/brands/{id}/`
+* **Delete Brand**: `DELETE /api/brands/{id}/`
 
-Category
+---
 
-Fields:
+### Categories
 
-id (UUID)
+* **List Categories**: `GET /api/categories/`
+* **Create Category**: `POST /api/categories/`
 
-name (string)
+  ```json
+  {
+    "name": "Bundles",
+    "slug": "bundles",
+    "parent": "parent_category_id_optional"
+  }
+  ```
+* **Category Details**: `GET /api/categories/{id}/`
+* **Update Category**: `PATCH /api/categories/{id}/`
+* **Delete Category**: `DELETE /api/categories/{id}/`
 
-slug (unique)
+---
 
-parent (self-referencing, optional)
+### Products
 
-Product
+* **List Products**: `GET /api/products/`
+* **Create Product**: `POST /api/products/` (Vendor only)
 
-Fields:
-
-id (UUID)
-
-name (string)
-
-price (decimal, optional)
-
-stock (integer, default 0)
-
-affiliate_url (URL, optional)
-
-image_url (URL, optional)
-
-image (file, optional)
-
-is_verified (boolean)
-
-brand (ForeignKey to Brand)
-
-category (ForeignKey to Category, optional)
-
-created_at / updated_at
-
-ProductCompare
-
-Fields:
-
-user (ForeignKey to User)
-
-products (ManyToManyField to Product)
-
-created_at (timestamp)
-
-API Endpoints
-Brands
-
-List Brands: GET /api/brands/
-
-Create Brand: POST /api/brands/ (Vendors only)
-
-{
-  "name": "Hair Haven",
-  "description": "Premium hair brand",
-  "website": "https://hairhaven.com",
-  "country": "Nigeria"
-}
-
-
-Brand Details: GET /api/brands/{id}/
-
-Update Brand: PATCH /api/brands/{id}/
-
-Delete Brand: DELETE /api/brands/{id}/
-
-Categories
-
-List Categories: GET /api/categories/
-
-Create Category: POST /api/categories/
-
-{
-  "name": "Bundles",
-  "slug": "bundles",
-  "parent": "parent_category_id_optional"
-}
-
-
-Category Details: GET /api/categories/{id}/
-
-Update Category: PATCH /api/categories/{id}/
-
-Delete Category: DELETE /api/categories/{id}/
-
-Products
-
-List Products: GET /api/products/
-
-Create Product: POST /api/products/ (Vendor only)
-
-{
-  "name": "Brazilian Hair Bundle",
-  "price": 100,
-  "stock": 50,
-  "brand": "brand_id",
-  "category": "category_id",
-  "affiliate_url": "https://affiliate.com",
-  "image_url": "https://image.com/image.jpg"
-}
-
-
-Product Details: GET /api/products/{id}/
-
-Update Product: PATCH /api/products/{id}/
-
-Delete Product: DELETE /api/products/{id}/
-
-Verify Product: PATCH /api/products/{id}/verify (Admin only)
-
-Product Comparison
-
-Compare Products: POST /api/products/compare/
-
-{
-  "user": "user_id",
-  "products": ["product_id1", "product_id2"]
-}
-
-
-Get User Comparisons: GET /api/products/compare/?user=user_id
-
-Testing
+  ```json
+  {
+    "name": "Brazilian Hair Bundle",
+    "price": 100,
+    "stock": 50,
+    "brand": "brand_id",
+    "category": "category_id",
+    "affiliate_url": "https://affiliate.com",
+    "image_url": "https://image.com/image.jpg"
+  }
+  ```
+* **Product Details**: `GET /api/products/{id}/`
+* **Update Product**: `PATCH /api/products/{id}/`
+* **Delete Product**: `DELETE /api/products/{id}/`
+* **Verify Product**: `PATCH /api/products/{id}/verify` (Admin only)
+
+---
+
+### Product Comparison
+
+* **Compare Products**: `POST /api/products/compare/`
+
+  ```json
+  {
+    "user": "user_id",
+    "products": ["product_id1", "product_id2"]
+  }
+  ```
+* **Get User Comparisons**: `GET /api/products/compare/?user=user_id`
+
+---
+
+## Testing
 
 Run the module tests:
 
+```bash
 python manage.py test products
+```
+
+Tests include:
+
+* Brand creation, listing, update, deletion.
+* Category hierarchy.
+* Product CRUD and verification.
+* Product comparison by users.
 
 
 Tests include:
@@ -585,5 +565,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 If you need further assistance or have questions about the API endpoints, feel free to open an issue in the repository.
+
 
 
