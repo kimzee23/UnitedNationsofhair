@@ -39,3 +39,4 @@ pycparser~=2.22
 dj-rest-auth~=7.0.1
 pyOpenSSL~=25.3.0
 paypalrestsdk~=1.13.3
+gunicorn
