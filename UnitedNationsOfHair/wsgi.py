@@ -15,6 +15,7 @@ from UnitedNationsOfHair import settings
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'UnitedNationsOfHair.settings')
 
+
 application = get_wsgi_application()
 
 if settings.DEBUG:
