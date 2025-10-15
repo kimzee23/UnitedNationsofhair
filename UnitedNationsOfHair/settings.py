@@ -1,5 +1,5 @@
 """
-Django settings for UnitedNationsOfHair project.
+Django settings for the UnitedNationsOfHair project.
 """
 
 import os
