@@ -16,11 +16,11 @@ load_dotenv()
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False 
 
 ALLOWED_HOSTS = [
     'united-nations-of-hair-backend.onrender.com',
+    'united-nations-of-hair.vercel.app',
     'localhost',
     '127.0.0.1'
 ]
@@ -54,6 +54,8 @@ INSTALLED_APPS = [
 
     "dj_rest_auth",
     "dj_rest_auth.registration",
+    
+    "corsheaders",
 
 
     "users",
@@ -89,6 +91,7 @@ REST_FRAMEWORK = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -188,7 +191,7 @@ SIMPLE_JWT = {
 # ffor Email configuration
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "info@unitednationofhaire.com"
-FRONTEND_URL = "http://localhost:3000"
+FRONTEND_URL = "https://united-nations-of-hair.vercel.app"
 ADMIN_EMAIL = "admin@unitednationsofhair.com"
 
 
@@ -216,3 +219,12 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     }
 }
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "https://united-nations-of-hair.vercel.app",  
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://united-nations-of-hair-backend.onrender.com",
+    "https://united-nations-of-hair.vercel.app",
+]
